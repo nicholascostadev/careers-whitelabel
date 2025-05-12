@@ -20,7 +20,9 @@ model Organization {
   descriptionMarkdown String?
   imageURL            String?
   bannerURL           String?
-  jobs                Job[]
+
+  jobs        Job[]
+  departments Department[]
 }
 
 model Job {
@@ -32,6 +34,9 @@ model Job {
   organizationId String
 
   jobApplications JobApplication[]
+
+  department   Department @relation(fields: [departmentId], references: [id])
+  departmentId String
 
   createdAt DateTime @default(now())
 }
@@ -49,4 +54,15 @@ model JobApplication {
   jobId String
 
   createdAt DateTime @default(now())
+}
+
+model Department {
+  id String @id @default(uuid())
+
+  name String
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+
+  jobs Job[]
 }

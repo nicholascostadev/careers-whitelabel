@@ -4,6 +4,7 @@ import type { JobsRepository } from "@/repositories/jobs-repository";
 interface CreateJobRequest {
 	title: string;
 	descriptionMarkdown: string;
+	departmentId: string;
 }
 
 export class CreateJobService {
