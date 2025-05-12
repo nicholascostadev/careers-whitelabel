@@ -1,4 +1,4 @@
-import { InMemoryJobsRepository } from "../repositories/in-memory/in-memory-jobs-repository";
+import { InMemoryJobsRepository } from "../../repositories/in-memory/in-memory-jobs-repository";
 import { CreateJobService } from "./create-job";
 
 describe("Create Job Service", () => {
