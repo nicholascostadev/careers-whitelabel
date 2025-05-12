@@ -1,6 +1,7 @@
 ## TODO
 
 ### Simple Features
+
 - [ ] Add tags to jobs (e.g: in Google, you could be working on "Google Cloud", "Google Ads", "Google Search", etc.)
   - JobTag model, with:
     - [ ] Name
