@@ -1,0 +1,11 @@
+services:
+  careers-whitelabel-pg:
+    image: bitnami/postgresql
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRESQL_USERNAME=docker
+      - POSTGRESQL_PASSWORD=docker
+      - POSTGRESQL_DATABASE=careers-whitelabel-pg
+    
+      
