@@ -1,4 +1,3 @@
-import "dotenv/config";
 import fastify from "fastify";
 import { env } from "./lib/env";
 

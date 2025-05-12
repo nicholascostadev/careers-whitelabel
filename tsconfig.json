@@ -12,6 +12,7 @@
       "@/*": ["./src/*"]
     },
     "outDir": "./dist",
+    "types": ["vitest/globals"],
     "strict": true,
     "esModuleInterop": true,
     "noUncheckedIndexedAccess": true,

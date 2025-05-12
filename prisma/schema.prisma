@@ -43,7 +43,7 @@ model JobApplication {
   firstName String
   lastName  String
   phone     String?
-  cvURL     String?
+  resumeURL String?
 
   job   Job    @relation(fields: [jobId], references: [id])
   jobId String
