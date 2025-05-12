@@ -1,6 +1,6 @@
 import type { Job, Prisma } from "@prisma/client";
 import { randomUUID } from "node:crypto";
-import type { JobsRepository } from "../jobs-repository";
+import type { FindManyJobsRequest, JobsRepository } from "../jobs-repository";
 
 export class InMemoryJobsRepository implements JobsRepository {
 	items: Job[] = [];
@@ -25,5 +25,27 @@ export class InMemoryJobsRepository implements JobsRepository {
 		}
 
 		return job;
+	}
+
+	async findMany(data: FindManyJobsRequest, page: number) {
+		const jobs = this.items.filter((job) => {
+			if (data.departmentId && job.departmentId !== data.departmentId) {
+				return false;
+			}
+
+			if (data.jobTitle && !job.title.includes(data.jobTitle)) {
+				return false;
+			}
+
+			return true;
+		});
+
+		const startIndex = (page - 1) * 10;
+		const endIndex = startIndex + 10;
+
+		return {
+			jobs: jobs.slice(startIndex, endIndex),
+			totalCount: jobs.length,
+		};
 	}
 }
