@@ -1,5 +1,6 @@
-import { JobApplicationAlreadySubmittedException } from "@/exceptions/job-application-already-submitted";
+import { JobApplicationAlreadySubmittedException } from "@/exceptions/job-application-already-submitted-exception";
 import { JobNotFoundException } from "@/exceptions/job-not-found-exception";
+import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository";
 import { InMemoryJobApplicationsRepository } from "@/repositories/in-memory/in-memory-job-applications-repository";
 import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository";
 import { ApplyToJobService } from "./apply-to-job";
@@ -7,6 +8,7 @@ import { ApplyToJobService } from "./apply-to-job";
 describe("Apply to Job Service", () => {
 	let jobsRepository: InMemoryJobsRepository;
 	let jobApplicationsRepository: InMemoryJobApplicationsRepository;
+	let departmentsRepository: InMemoryDepartmentsRepository;
 	let applyToJobService: ApplyToJobService;
 
 	const user = {
@@ -20,6 +22,7 @@ describe("Apply to Job Service", () => {
 	beforeEach(() => {
 		jobsRepository = new InMemoryJobsRepository();
 		jobApplicationsRepository = new InMemoryJobApplicationsRepository();
+		departmentsRepository = new InMemoryDepartmentsRepository();
 		applyToJobService = new ApplyToJobService(
 			jobsRepository,
 			jobApplicationsRepository,
@@ -36,10 +39,16 @@ describe("Apply to Job Service", () => {
 	});
 
 	it("should not be able to apply to a job with the same email", async () => {
+		const department = await departmentsRepository.create({
+			name: "Software Engineering",
+			organizationId: "organization-id",
+		});
+
 		const job = await jobsRepository.create({
 			title: "Software Engineer",
 			descriptionMarkdown: "Software Engineer",
 			organizationId: "organization-id",
+			departmentId: department.id,
 		});
 
 		await applyToJobService.execute({
@@ -56,10 +65,16 @@ describe("Apply to Job Service", () => {
 	});
 
 	it("should be able to apply to a job", async () => {
+		const department = await departmentsRepository.create({
+			name: "Software Engineering",
+			organizationId: "organization-id",
+		});
+
 		const job = await jobsRepository.create({
 			title: "Software Engineer",
 			descriptionMarkdown: "Software Engineer",
 			organizationId: "organization-id",
+			departmentId: department.id,
 		});
 
 		const jobApplication = await applyToJobService.execute({
