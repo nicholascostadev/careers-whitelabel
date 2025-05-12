@@ -15,7 +15,7 @@ datasource db {
 
 model Organization {
   id                  String  @id @default(uuid())
-  email               String
+  email               String  @unique
   name                String
   descriptionMarkdown String?
   imageURL            String?
@@ -54,6 +54,8 @@ model JobApplication {
   jobId String
 
   createdAt DateTime @default(now())
+
+  @@unique([jobId, email])
 }
 
 model Department {
