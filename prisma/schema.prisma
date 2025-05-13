@@ -20,10 +20,6 @@ model Organization {
   descriptionMarkdown String?
   imageURL            String?
   bannerURL           String?
-
-  jobs        Job[]
-  departments Department[]
-  jobTags     JobTag[]
 }
 
 enum WorkplaceLocation {
@@ -47,13 +43,9 @@ enum JobStatus {
 model JobTag {
   id String @id @default(uuid())
 
-  name           String
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  organizationId String?
-  job            Job?          @relation(fields: [jobId], references: [id])
-  jobId          String?
-
-  @@unique([organizationId, name])
+  name  String  @unique
+  job   Job?    @relation(fields: [jobId], references: [id])
+  jobId String?
 }
 
 model Job {
@@ -70,9 +62,6 @@ model Job {
   jobStatus           JobStatus         @default(OPEN)
 
   jobTags JobTag[]
-
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  organizationId String
 
   jobApplications JobApplication[]
 
@@ -103,9 +92,6 @@ model Department {
   id String @id @default(uuid())
 
   name String @unique
-
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  organizationId String
 
   jobs Job[]
 }
