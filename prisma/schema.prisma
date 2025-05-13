@@ -23,12 +23,53 @@ model Organization {
 
   jobs        Job[]
   departments Department[]
+  jobTags     JobTag[]
+}
+
+enum WorkplaceLocation {
+  REMOTE
+  HYBRID
+  ON_SITE
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+  CONTRACTOR
+}
+
+enum JobStatus {
+  OPEN
+  CLOSED
+}
+
+model JobTag {
+  id String @id @default(uuid())
+
+  name           String
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+  job            Job?          @relation(fields: [jobId], references: [id])
+  jobId          String?
+
+  @@unique([organizationId, name])
 }
 
 model Job {
-  id                  String @id @default(uuid())
+  id                  String            @id @default(uuid())
   title               String
   descriptionMarkdown String
+  workplaceLocation   WorkplaceLocation
+  country             String
+  city                String
+  zipCode             String?
+  employmentType      EmploymentType
+  salaryMin           Int?
+  salaryMax           Int?
+  jobStatus           JobStatus
+
+  jobTags JobTag[]
 
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
