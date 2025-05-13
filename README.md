@@ -3,17 +3,19 @@
 ### Simple Features
 
 - [ ] Add tags to jobs (e.g: in Google, you could be working on "Google Cloud", "Google Ads", "Google Search", etc.)
-  - JobTag model, with:
-    - [ ] Name
-- [ ] Add to jobs
-  - [ ] WorkplaceLocation (e.g: "Remote", "On-site", "Hybrid")
-  - [ ] EmploymentType (e.g: "Full-time", "Part-time", "Internship", "Contractor")
-  - [ ] Country
-  - [ ] City
-  - [ ] Zip Code
-  - [ ] SalaryMin
-  - [ ] SalaryMax
-  - [ ] JobStatus (e.g: "Open", "Closed")
+- [x] JobTag model, with:
+  - [x] Name
+  - [x] OrganizationId
+  - [x] JobId
+- [x] Add to jobs
+  - [x] WorkplaceLocation (e.g: "Remote", "On-site", "Hybrid")
+  - [x] EmploymentType (e.g: "Full-time", "Part-time", "Internship", "Contractor")
+  - [x] Country
+  - [x] City
+  - [x] Zip Code
+  - [x] SalaryMin
+  - [x] SalaryMax
+  - [x] JobStatus (e.g: "Open", "Closed")
 - [ ] Add job application status (e.g: "Applied", "Interviewing", "Hired", "Rejected")
   - [ ] Update job application status
 

@@ -1,4 +1,3 @@
-import { env } from "@/lib/env";
 import type { JobsRepository } from "@/repositories/jobs-repository";
 import {
 	type EmploymentType,
@@ -26,7 +25,6 @@ export class CreateJobService {
 	async execute(data: CreateJobRequest) {
 		const job = await this.jobsRepository.create({
 			...data,
-			organizationId: env.ORGANIZATION_ID,
 			jobStatus: data.jobStatus ?? JobStatus.OPEN,
 			jobTags: data.jobTags ?? [],
 		});

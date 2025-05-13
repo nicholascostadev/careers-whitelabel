@@ -3,6 +3,7 @@ import { JobNotFoundException } from "@/exceptions/job-not-found-exception";
 import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository";
 import { InMemoryJobApplicationsRepository } from "@/repositories/in-memory/in-memory-job-applications-repository";
 import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository";
+import { EmploymentType, JobStatus, WorkplaceLocation } from "@prisma/client";
 import { ApplyToJobService } from "./apply-to-job";
 
 describe("Apply to Job Service", () => {
@@ -41,14 +42,19 @@ describe("Apply to Job Service", () => {
 	it("should not be able to apply to a job with the same email", async () => {
 		const department = await departmentsRepository.create({
 			name: "Software Engineering",
-			organizationId: "organization-id",
 		});
 
 		const job = await jobsRepository.create({
 			title: "Software Engineer",
 			descriptionMarkdown: "Software Engineer",
-			organizationId: "organization-id",
 			departmentId: department.id,
+			workplaceLocation: WorkplaceLocation.REMOTE,
+			employmentType: EmploymentType.FULL_TIME,
+			jobStatus: JobStatus.OPEN,
+			country: "Brazil",
+			city: "São Paulo",
+			zipCode: "01001-000",
+			jobTags: ["typescript", "node"],
 		});
 
 		await applyToJobService.execute({
@@ -67,14 +73,19 @@ describe("Apply to Job Service", () => {
 	it("should be able to apply to a job", async () => {
 		const department = await departmentsRepository.create({
 			name: "Software Engineering",
-			organizationId: "organization-id",
 		});
 
 		const job = await jobsRepository.create({
 			title: "Software Engineer",
 			descriptionMarkdown: "Software Engineer",
-			organizationId: "organization-id",
 			departmentId: department.id,
+			workplaceLocation: WorkplaceLocation.REMOTE,
+			employmentType: EmploymentType.FULL_TIME,
+			jobStatus: JobStatus.OPEN,
+			country: "Brazil",
+			city: "São Paulo",
+			zipCode: "01001-000",
+			jobTags: ["typescript", "node"],
 		});
 
 		const jobApplication = await applyToJobService.execute({

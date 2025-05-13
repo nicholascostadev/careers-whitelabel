@@ -1,13 +1,14 @@
-import type { Job } from "@prisma/client";
+import type { Job, JobTag } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import type {
 	CreateJobRequest,
 	FindManyJobsRequest,
 	JobsRepository,
+	UpdateJobRequest,
 } from "../jobs-repository";
 
 export class InMemoryJobsRepository implements JobsRepository {
-	items: (Job & { jobTags: string[] })[] = [];
+	items: (Job & { jobTags: JobTag[] })[] = [];
 	jobTags: string[] = [];
 
 	async create(data: CreateJobRequest) {
@@ -19,6 +20,12 @@ export class InMemoryJobsRepository implements JobsRepository {
 			this.jobTags.push(...notFoundJobTags);
 		}
 
+		const jobTags = data.jobTags.map((tag) => ({
+			id: randomUUID(),
+			name: tag,
+			jobId: null,
+		}));
+
 		const job = {
 			...data,
 			id: data.id ?? randomUUID(),
@@ -26,7 +33,7 @@ export class InMemoryJobsRepository implements JobsRepository {
 			zipCode: data.zipCode ?? null,
 			salaryMin: data.salaryMin ?? null,
 			salaryMax: data.salaryMax ?? null,
-			jobTags: data.jobTags,
+			jobTags,
 		};
 
 		this.items.push(job);
@@ -88,7 +95,7 @@ export class InMemoryJobsRepository implements JobsRepository {
 			}
 
 			if (data.jobTags && data.jobTags.length > 0) {
-				if (!job.jobTags.some((tag) => data.jobTags.includes(tag))) {
+				if (!job.jobTags.some((tag) => data.jobTags.includes(tag.name))) {
 					return false;
 				}
 			}
@@ -103,5 +110,46 @@ export class InMemoryJobsRepository implements JobsRepository {
 			jobs: jobs.slice(startIndex, endIndex),
 			totalCount: jobs.length,
 		};
+	}
+
+	async update(id: string, data: UpdateJobRequest) {
+		const jobIndex = this.items.findIndex((job) => job.id === id);
+
+		if (jobIndex === -1) {
+			throw new Error();
+		}
+
+		const currentJob = this.items[jobIndex];
+
+		if (!currentJob) {
+			throw new Error();
+		}
+
+		const updatedJobTags =
+			data.jobTags?.map((tagName) => ({
+				id: crypto.randomUUID(),
+				name: tagName,
+				jobId: id,
+			})) ?? currentJob.jobTags;
+
+		this.items[jobIndex] = {
+			...currentJob,
+			title: data.title ?? currentJob.title,
+			descriptionMarkdown:
+				data.descriptionMarkdown ?? currentJob.descriptionMarkdown,
+			salaryMin:
+				data.salaryMin === undefined ? currentJob.salaryMin : data.salaryMin,
+			salaryMax:
+				data.salaryMax === undefined ? currentJob.salaryMax : data.salaryMax,
+			workplaceLocation: data.workplaceLocation ?? currentJob.workplaceLocation,
+			employmentType: data.employmentType ?? currentJob.employmentType,
+			country: data.country ?? currentJob.country,
+			city: data.city ?? currentJob.city,
+			zipCode: data.zipCode === undefined ? currentJob.zipCode : data.zipCode,
+			jobTags: updatedJobTags,
+			jobStatus: data.jobStatus ?? currentJob.jobStatus,
+		};
+
+		return this.items[jobIndex];
 	}
 }

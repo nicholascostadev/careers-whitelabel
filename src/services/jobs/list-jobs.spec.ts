@@ -15,7 +15,6 @@ describe("List Jobs Service", () => {
 		return jobsRepository.create({
 			title: "Software Engineer",
 			descriptionMarkdown: "Software Engineer description",
-			organizationId: "1",
 			departmentId: "1",
 			country: "United States",
 			city: "New York",
@@ -172,7 +171,9 @@ describe("List Jobs Service", () => {
 			expect(jobs).toHaveLength(1);
 			expect(jobs[0]).toEqual(
 				expect.objectContaining({
-					jobTags: expect.arrayContaining(["react"]),
+					jobTags: expect.arrayContaining([
+						expect.objectContaining({ name: "react" }),
+					]),
 				}),
 			);
 		});

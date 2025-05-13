@@ -1,5 +1,4 @@
 import { DepartmentWithSameNameException } from "@/exceptions/department-with-same-name-exception";
-import { env } from "@/lib/env";
 import type { DepartmentsRepository } from "@/repositories/departments-repository";
 
 interface CreateDepartmentRequest {
@@ -18,10 +17,7 @@ export class CreateDepartmentService {
 			throw new DepartmentWithSameNameException();
 		}
 
-		const createdDepartment = await this.departmentsRepository.create({
-			...data,
-			organizationId: env.ORGANIZATION_ID,
-		});
+		const createdDepartment = await this.departmentsRepository.create(data);
 
 		return createdDepartment;
 	}

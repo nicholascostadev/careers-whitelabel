@@ -1,6 +1,10 @@
-import { env } from "@/lib/env";
 import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository";
-import { EmploymentType, JobStatus, WorkplaceLocation } from "@prisma/client";
+import {
+	type Department,
+	EmploymentType,
+	JobStatus,
+	WorkplaceLocation,
+} from "@prisma/client";
 import { InMemoryJobsRepository } from "../../repositories/in-memory/in-memory-jobs-repository";
 import { CreateJobService } from "./create-job";
 
@@ -8,7 +12,7 @@ describe("Create Job Service", () => {
 	let jobsRepository: InMemoryJobsRepository;
 	let departmentsRepository: InMemoryDepartmentsRepository;
 	let createJobService: CreateJobService;
-	let department: { id: string; name: string; organizationId: string };
+	let department: Department;
 
 	beforeEach(async () => {
 		jobsRepository = new InMemoryJobsRepository();
@@ -17,7 +21,6 @@ describe("Create Job Service", () => {
 
 		department = await departmentsRepository.create({
 			name: "Software Engineering",
-			organizationId: "organization-id",
 		});
 	});
 
@@ -40,7 +43,6 @@ describe("Create Job Service", () => {
 					id: job.id,
 					title: "Software Engineer",
 					descriptionMarkdown: "Software Engineer description",
-					organizationId: env.ORGANIZATION_ID,
 					jobStatus: JobStatus.OPEN,
 				}),
 			);
@@ -99,7 +101,9 @@ describe("Create Job Service", () => {
 
 			expect(job).toEqual(
 				expect.objectContaining({
-					jobTags,
+					jobTags: expect.arrayContaining(
+						jobTags.map((tag) => expect.objectContaining({ name: tag })),
+					),
 				}),
 			);
 		});
@@ -136,20 +140,6 @@ describe("Create Job Service", () => {
 					jobTags: [],
 				}),
 			);
-		});
-
-		it("should set organizationId from environment", async () => {
-			const job = await createJobService.execute({
-				title: "Cloud Engineer",
-				descriptionMarkdown: "Cloud position",
-				departmentId: department.id,
-				country: "United States",
-				city: "Portland",
-				workplaceLocation: WorkplaceLocation.REMOTE,
-				employmentType: EmploymentType.FULL_TIME,
-			});
-
-			expect(job.organizationId).toBe(env.ORGANIZATION_ID);
 		});
 	});
 });
