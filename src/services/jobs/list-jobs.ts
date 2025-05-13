@@ -1,9 +1,18 @@
 import type { JobsRepository } from "@/repositories/jobs-repository";
+import type { EmploymentType, WorkplaceLocation } from "@prisma/client";
 
 interface ListJobsRequest {
 	departmentId?: string;
 	jobTitle?: string;
 	page: number;
+	salaryMin?: number;
+	salaryMax?: number;
+	workplaceLocation?: WorkplaceLocation;
+	employmentType?: EmploymentType;
+	country?: string;
+	city?: string;
+	zipCode?: string;
+	jobTags?: string[];
 }
 
 export class ListJobsService {
@@ -14,6 +23,13 @@ export class ListJobsService {
 			{
 				departmentId: data.departmentId,
 				jobTitle: data.jobTitle,
+				jobTags: data.jobTags ?? [],
+				salaryMin: data.salaryMin,
+				salaryMax: data.salaryMax,
+				workplaceLocation: data.workplaceLocation,
+				employmentType: data.employmentType,
+				country: data.country,
+				city: data.city,
 			},
 			data.page,
 		);
