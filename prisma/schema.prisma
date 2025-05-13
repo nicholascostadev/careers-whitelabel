@@ -67,7 +67,7 @@ model Job {
   employmentType      EmploymentType
   salaryMin           Int?
   salaryMax           Int?
-  jobStatus           JobStatus
+  jobStatus           JobStatus         @default(OPEN)
 
   jobTags JobTag[]
 
