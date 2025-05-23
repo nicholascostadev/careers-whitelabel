@@ -15,6 +15,6 @@ describe("Get Organization Info Service", () => {
 	it("should return the organization info", async () => {
 		const organizationInfo = await getOrganizationInfoService.execute();
 
-		expect(organizationInfo).toEqual(organizationRepository.data);
+		expect(organizationInfo).toEqual(organizationRepository.organization);
 	});
 });
