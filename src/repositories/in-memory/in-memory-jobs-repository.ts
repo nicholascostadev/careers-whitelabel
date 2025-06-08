@@ -34,6 +34,7 @@ export class InMemoryJobsRepository implements JobsRepository {
 			salaryMin: data.salaryMin ?? null,
 			salaryMax: data.salaryMax ?? null,
 			jobTags,
+			updatedAt: new Date(),
 		};
 
 		this.items.push(job);
@@ -147,7 +148,7 @@ export class InMemoryJobsRepository implements JobsRepository {
 			city: data.city ?? currentJob.city,
 			zipCode: data.zipCode === undefined ? currentJob.zipCode : data.zipCode,
 			jobTags: updatedJobTags,
-			jobStatus: data.jobStatus ?? currentJob.jobStatus,
+			status: data.status ?? currentJob.status,
 		};
 
 		return this.items[jobIndex];

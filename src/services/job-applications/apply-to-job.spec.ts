@@ -1,4 +1,5 @@
 import { JobApplicationAlreadySubmittedException } from "@/exceptions/job-application-already-submitted-exception";
+import { JobClosedException } from "@/exceptions/job-closed-exception";
 import { JobNotFoundException } from "@/exceptions/job-not-found-exception";
 import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository";
 import { InMemoryJobApplicationsRepository } from "@/repositories/in-memory/in-memory-job-applications-repository";
@@ -50,7 +51,7 @@ describe("Apply to Job Service", () => {
 			departmentId: department.id,
 			workplaceLocation: WorkplaceLocation.REMOTE,
 			employmentType: EmploymentType.FULL_TIME,
-			jobStatus: JobStatus.OPEN,
+			status: JobStatus.OPEN,
 			country: "Brazil",
 			city: "São Paulo",
 			zipCode: "01001-000",
@@ -70,6 +71,32 @@ describe("Apply to Job Service", () => {
 		).rejects.toThrow(JobApplicationAlreadySubmittedException);
 	});
 
+	it("should not be able to apply to a closed job", async () => {
+		const department = await departmentsRepository.create({
+			name: "Software Engineering",
+		});
+
+		const job = await jobsRepository.create({
+			title: "Software Engineer",
+			descriptionMarkdown: "Software Engineer",
+			departmentId: department.id,
+			workplaceLocation: WorkplaceLocation.REMOTE,
+			employmentType: EmploymentType.FULL_TIME,
+			status: JobStatus.CLOSED,
+			country: "Brazil",
+			city: "São Paulo",
+			zipCode: "01001-000",
+			jobTags: ["typescript", "node"],
+		});
+
+		await expect(
+			applyToJobService.execute({
+				jobId: job.id,
+				...user,
+			}),
+		).rejects.toThrow(JobClosedException);
+	});
+
 	it("should be able to apply to a job", async () => {
 		const department = await departmentsRepository.create({
 			name: "Software Engineering",
@@ -81,7 +108,7 @@ describe("Apply to Job Service", () => {
 			departmentId: department.id,
 			workplaceLocation: WorkplaceLocation.REMOTE,
 			employmentType: EmploymentType.FULL_TIME,
-			jobStatus: JobStatus.OPEN,
+			status: JobStatus.OPEN,
 			country: "Brazil",
 			city: "São Paulo",
 			zipCode: "01001-000",

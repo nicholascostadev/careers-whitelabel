@@ -18,7 +18,7 @@ interface UpdateJobRequest {
 	city?: string;
 	zipCode?: string | null;
 	jobTags?: string[];
-	jobStatus?: JobStatus;
+	status?: JobStatus;
 }
 
 export class UpdateJobService {

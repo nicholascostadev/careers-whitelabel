@@ -1,4 +1,8 @@
-import type { JobApplication, Prisma } from "@prisma/client";
+import {
+	type JobApplication,
+	JobApplicationStatus,
+	type Prisma,
+} from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import type { JobApplicationsRepository } from "../job-application-repository";
 
@@ -15,6 +19,7 @@ export class InMemoryJobApplicationsRepository
 		const jobApplication = {
 			id: randomUUID(),
 			createdAt: new Date(),
+			status: data.status ?? JobApplicationStatus.PENDING,
 			phone: data.phone ?? null,
 			resumeURL: data.resumeURL ?? null,
 			...data,

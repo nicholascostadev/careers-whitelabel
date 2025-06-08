@@ -21,7 +21,7 @@ describe("Update Job Service", () => {
 			city: "New York",
 			workplaceLocation: WorkplaceLocation.ON_SITE,
 			employmentType: EmploymentType.FULL_TIME,
-			jobStatus: JobStatus.OPEN,
+			status: JobStatus.OPEN,
 			salaryMin: 50000,
 			salaryMax: 100000,
 			jobTags: ["javascript", "react"],
@@ -206,10 +206,10 @@ describe("Update Job Service", () => {
 
 			const updatedJob = await updateJobService.execute({
 				id: job.id,
-				jobStatus: JobStatus.CLOSED,
+				status: JobStatus.CLOSED,
 			});
 
-			expect(updatedJob.jobStatus).toBe(JobStatus.CLOSED);
+			expect(updatedJob.status).toBe(JobStatus.CLOSED);
 		});
 	});
 });

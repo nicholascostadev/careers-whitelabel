@@ -26,7 +26,7 @@ export interface CreateJobRequest {
 	salaryMax?: number | null;
 	workplaceLocation: WorkplaceLocation;
 	employmentType: EmploymentType;
-	jobStatus: JobStatus;
+	status: JobStatus;
 	departmentId: string;
 	country: string;
 	city: string;
@@ -46,7 +46,7 @@ export interface UpdateJobRequest {
 	city?: string;
 	zipCode?: string | null;
 	jobTags?: string[];
-	jobStatus?: JobStatus;
+	status?: JobStatus;
 }
 
 export interface JobWithTags extends Job {

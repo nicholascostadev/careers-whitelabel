@@ -59,7 +59,7 @@ model Job {
   employmentType      EmploymentType
   salaryMin           Int?
   salaryMax           Int?
-  jobStatus           JobStatus         @default(OPEN)
+  status              JobStatus         @default(OPEN)
 
   jobTags JobTag[]
 
@@ -69,6 +69,15 @@ model Job {
   departmentId String
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum JobApplicationStatus {
+  PENDING
+  REVIEWING
+  INTERVIEWING
+  HIRED
+  REJECTED
 }
 
 model JobApplication {
@@ -82,6 +91,8 @@ model JobApplication {
 
   job   Job    @relation(fields: [jobId], references: [id])
   jobId String
+
+  status JobApplicationStatus @default(PENDING)
 
   createdAt DateTime @default(now())
 
