@@ -1,3 +1,5 @@
+import { DepartmentNotFoundException } from "@/exceptions/department-not-found";
+import type { DepartmentsRepository } from "@/repositories/departments-repository";
 import type { JobsRepository } from "@/repositories/jobs-repository";
 import {
 	type EmploymentType,
@@ -15,18 +17,29 @@ interface CreateJobRequest {
 	employmentType: EmploymentType;
 	salaryMin?: number;
 	salaryMax?: number;
-	jobStatus?: JobStatus;
-	jobTags?: string[];
+	status?: JobStatus;
+	tags?: string[];
 }
 
 export class CreateJobService {
-	constructor(private jobsRepository: JobsRepository) {}
+	constructor(
+		private jobsRepository: JobsRepository,
+		private departmentsRepository: DepartmentsRepository,
+	) {}
 
 	async execute(data: CreateJobRequest) {
+		const department = await this.departmentsRepository.findById(
+			data.departmentId,
+		);
+
+		if (!department) {
+			throw new DepartmentNotFoundException();
+		}
+
 		const job = await this.jobsRepository.create({
 			...data,
-			jobStatus: data.jobStatus ?? JobStatus.OPEN,
-			jobTags: data.jobTags ?? [],
+			status: data.status ?? JobStatus.OPEN,
+			tags: data.tags ?? [],
 		});
 
 		return job;

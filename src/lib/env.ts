@@ -7,6 +7,7 @@ const _env = z.object({
 		.default("development"),
 	PORT: z.number().default(8080),
 	DATABASE_URL: z.string(),
+	JWT_SECRET: z.string(),
 	ORGANIZATION_ID: z.string().uuid(),
 });
 

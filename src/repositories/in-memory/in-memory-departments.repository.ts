@@ -19,4 +19,8 @@ export class InMemoryDepartmentsRepository implements DepartmentsRepository {
 	async findByName(name: string) {
 		return this.items.find((item) => item.name === name) ?? null;
 	}
+
+	async findById(id: string) {
+		return this.items.find((item) => item.id === id) ?? null;
+	}
 }

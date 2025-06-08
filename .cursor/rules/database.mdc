@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Database Structure
+
+- The database schema is defined in [prisma/schema.prisma](mdc:prisma/schema.prisma) and managed with Prisma.
+- Key models: Organization, Department, Job, JobTag, JobApplication.
+- Important enums: WorkplaceLocation, EmploymentType, JobStatus, JobApplicationStatus.
+- Migrations are stored in [prisma/migrations/](mdc:prisma/migrations).
+- Each model is related to the business logic and API endpoints (e.g., jobs, applications, departments).

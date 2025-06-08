@@ -17,7 +17,10 @@ describe("Create Job Service", () => {
 	beforeEach(async () => {
 		jobsRepository = new InMemoryJobsRepository();
 		departmentsRepository = new InMemoryDepartmentsRepository();
-		createJobService = new CreateJobService(jobsRepository);
+		createJobService = new CreateJobService(
+			jobsRepository,
+			departmentsRepository,
+		);
 
 		department = await departmentsRepository.create({
 			name: "Software Engineering",
@@ -43,7 +46,7 @@ describe("Create Job Service", () => {
 					id: job.id,
 					title: "Software Engineer",
 					descriptionMarkdown: "Software Engineer description",
-					jobStatus: JobStatus.OPEN,
+					status: JobStatus.OPEN,
 				}),
 			);
 		});
@@ -80,10 +83,10 @@ describe("Create Job Service", () => {
 				city: "Miami",
 				workplaceLocation: WorkplaceLocation.REMOTE,
 				employmentType: EmploymentType.FULL_TIME,
-				jobStatus: JobStatus.CLOSED,
+				status: JobStatus.CLOSED,
 			});
 
-			expect(job.jobStatus).toBe(JobStatus.CLOSED);
+			expect(job.status).toBe(JobStatus.CLOSED);
 		});
 
 		it("should create a job with tags", async () => {
@@ -96,12 +99,12 @@ describe("Create Job Service", () => {
 				city: "Austin",
 				workplaceLocation: WorkplaceLocation.ON_SITE,
 				employmentType: EmploymentType.CONTRACTOR,
-				jobTags,
+				tags: jobTags,
 			});
 
 			expect(job).toEqual(
 				expect.objectContaining({
-					jobTags: expect.arrayContaining(
+					tags: expect.arrayContaining(
 						jobTags.map((tag) => expect.objectContaining({ name: tag })),
 					),
 				}),
@@ -121,7 +124,7 @@ describe("Create Job Service", () => {
 				employmentType: EmploymentType.FULL_TIME,
 			});
 
-			expect(job.jobStatus).toBe(JobStatus.OPEN);
+			expect(job.status).toBe(JobStatus.OPEN);
 		});
 
 		it("should set default job tags to empty array when not provided", async () => {
@@ -137,7 +140,7 @@ describe("Create Job Service", () => {
 
 			expect(job).toEqual(
 				expect.objectContaining({
-					jobTags: [],
+					tags: [],
 				}),
 			);
 		});

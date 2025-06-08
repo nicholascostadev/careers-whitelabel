@@ -20,8 +20,8 @@ describe("List Jobs Service", () => {
 			city: "New York",
 			workplaceLocation: WorkplaceLocation.ON_SITE,
 			employmentType: EmploymentType.FULL_TIME,
-			jobStatus: JobStatus.OPEN,
-			jobTags: [],
+			status: JobStatus.OPEN,
+			tags: [],
 			...override,
 		});
 	};
@@ -160,18 +160,18 @@ describe("List Jobs Service", () => {
 		});
 
 		it("should filter jobs by tags", async () => {
-			await createDefaultJob({ jobTags: ["react", "typescript"] });
-			await createDefaultJob({ jobTags: ["python", "django"] });
+			await createDefaultJob({ tags: ["react", "typescript"] });
+			await createDefaultJob({ tags: ["python", "django"] });
 
 			const { jobs } = await listJobsService.execute({
-				jobTags: ["react"],
+				tags: ["react"],
 				page: 1,
 			});
 
 			expect(jobs).toHaveLength(1);
 			expect(jobs[0]).toEqual(
 				expect.objectContaining({
-					jobTags: expect.arrayContaining([
+					tags: expect.arrayContaining([
 						expect.objectContaining({ name: "react" }),
 					]),
 				}),

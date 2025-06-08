@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# TypeScript Style Guide
+
+- Use `type` definitions instead of `interface` unless working with classes.
+- Do not add explicit types when TypeScript can infer them automatically.

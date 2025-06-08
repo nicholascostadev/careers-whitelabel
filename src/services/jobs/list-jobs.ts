@@ -12,7 +12,7 @@ interface ListJobsRequest {
 	country?: string;
 	city?: string;
 	zipCode?: string;
-	jobTags?: string[];
+	tags?: string[];
 }
 
 export class ListJobsService {
@@ -23,7 +23,7 @@ export class ListJobsService {
 			{
 				departmentId: data.departmentId,
 				jobTitle: data.jobTitle,
-				jobTags: data.jobTags ?? [],
+				tags: data.tags ?? [],
 				salaryMin: data.salaryMin,
 				salaryMax: data.salaryMax,
 				workplaceLocation: data.workplaceLocation,

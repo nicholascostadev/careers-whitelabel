@@ -16,6 +16,7 @@ datasource db {
 model Organization {
   id                  String  @id @default(uuid())
   email               String  @unique
+  passwordHash        String
   name                String
   descriptionMarkdown String?
   imageURL            String?
@@ -61,7 +62,7 @@ model Job {
   salaryMax           Int?
   status              JobStatus         @default(OPEN)
 
-  jobTags JobTag[]
+  tags JobTag[]
 
   jobApplications JobApplication[]
 

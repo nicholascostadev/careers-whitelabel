@@ -55,7 +55,7 @@ describe("Apply to Job Service", () => {
 			country: "Brazil",
 			city: "São Paulo",
 			zipCode: "01001-000",
-			jobTags: ["typescript", "node"],
+			tags: ["typescript", "node"],
 		});
 
 		await applyToJobService.execute({
@@ -86,7 +86,7 @@ describe("Apply to Job Service", () => {
 			country: "Brazil",
 			city: "São Paulo",
 			zipCode: "01001-000",
-			jobTags: ["typescript", "node"],
+			tags: ["typescript", "node"],
 		});
 
 		await expect(
@@ -112,7 +112,7 @@ describe("Apply to Job Service", () => {
 			country: "Brazil",
 			city: "São Paulo",
 			zipCode: "01001-000",
-			jobTags: ["typescript", "node"],
+			tags: ["typescript", "node"],
 		});
 
 		const jobApplication = await applyToJobService.execute({

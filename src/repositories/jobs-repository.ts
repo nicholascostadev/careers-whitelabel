@@ -15,7 +15,7 @@ export interface FindManyJobsRequest {
 	employmentType?: EmploymentType;
 	country?: string;
 	city?: string;
-	jobTags: string[];
+	tags: string[];
 }
 
 export interface CreateJobRequest {
@@ -31,8 +31,14 @@ export interface CreateJobRequest {
 	country: string;
 	city: string;
 	zipCode?: string | null;
-	jobTags: string[];
+	tags: string[];
 	createdAt?: Date;
+}
+
+export interface ListJobsResponse {
+	jobs: JobWithTags[];
+	totalPages: number;
+	totalCount: number;
 }
 
 export interface UpdateJobRequest {
@@ -45,23 +51,18 @@ export interface UpdateJobRequest {
 	country?: string;
 	city?: string;
 	zipCode?: string | null;
-	jobTags?: string[];
+	tags?: string[];
 	status?: JobStatus;
+	departmentId?: string;
 }
 
 export interface JobWithTags extends Job {
-	jobTags: JobTag[];
+	tags: JobTag[];
 }
 
 export interface JobsRepository {
 	create(data: CreateJobRequest): Promise<JobWithTags>;
 	findById(id: string): Promise<JobWithTags | null>;
-	findMany(
-		data: FindManyJobsRequest,
-		page: number,
-	): Promise<{
-		jobs: JobWithTags[];
-		totalCount: number;
-	}>;
+	findMany(data: FindManyJobsRequest, page: number): Promise<ListJobsResponse>;
 	update(id: string, data: UpdateJobRequest): Promise<JobWithTags>;
 }

@@ -4,15 +4,16 @@ import type {
 	CreateJobRequest,
 	FindManyJobsRequest,
 	JobsRepository,
+	ListJobsResponse,
 	UpdateJobRequest,
 } from "../jobs-repository";
 
 export class InMemoryJobsRepository implements JobsRepository {
-	items: (Job & { jobTags: JobTag[] })[] = [];
+	items: (Job & { tags: JobTag[] })[] = [];
 	jobTags: string[] = [];
 
 	async create(data: CreateJobRequest) {
-		const notFoundJobTags = data.jobTags?.filter(
+		const notFoundJobTags = data.tags?.filter(
 			(tag) => !this.jobTags.some((t) => t === tag),
 		);
 
@@ -20,7 +21,7 @@ export class InMemoryJobsRepository implements JobsRepository {
 			this.jobTags.push(...notFoundJobTags);
 		}
 
-		const jobTags = data.jobTags.map((tag) => ({
+		const tags = data.tags.map((tag) => ({
 			id: randomUUID(),
 			name: tag,
 			jobId: null,
@@ -33,7 +34,7 @@ export class InMemoryJobsRepository implements JobsRepository {
 			zipCode: data.zipCode ?? null,
 			salaryMin: data.salaryMin ?? null,
 			salaryMax: data.salaryMax ?? null,
-			jobTags,
+			tags,
 			updatedAt: new Date(),
 		};
 
@@ -52,7 +53,10 @@ export class InMemoryJobsRepository implements JobsRepository {
 		return job;
 	}
 
-	async findMany(data: FindManyJobsRequest, page: number) {
+	async findMany(
+		data: FindManyJobsRequest,
+		page: number,
+	): Promise<ListJobsResponse> {
 		const jobs = this.items.filter((job) => {
 			if (data.departmentId && job.departmentId !== data.departmentId) {
 				return false;
@@ -95,8 +99,8 @@ export class InMemoryJobsRepository implements JobsRepository {
 				return false;
 			}
 
-			if (data.jobTags && data.jobTags.length > 0) {
-				if (!job.jobTags.some((tag) => data.jobTags.includes(tag.name))) {
+			if (data.tags && data.tags.length > 0) {
+				if (!job.tags.some((tag) => data.tags.includes(tag.name))) {
 					return false;
 				}
 			}
@@ -110,6 +114,7 @@ export class InMemoryJobsRepository implements JobsRepository {
 		return {
 			jobs: jobs.slice(startIndex, endIndex),
 			totalCount: jobs.length,
+			totalPages: Math.ceil(jobs.length / 10),
 		};
 	}
 
@@ -127,11 +132,11 @@ export class InMemoryJobsRepository implements JobsRepository {
 		}
 
 		const updatedJobTags =
-			data.jobTags?.map((tagName) => ({
+			data.tags?.map((tagName) => ({
 				id: crypto.randomUUID(),
 				name: tagName,
 				jobId: id,
-			})) ?? currentJob.jobTags;
+			})) ?? currentJob.tags;
 
 		this.items[jobIndex] = {
 			...currentJob,
@@ -147,8 +152,9 @@ export class InMemoryJobsRepository implements JobsRepository {
 			country: data.country ?? currentJob.country,
 			city: data.city ?? currentJob.city,
 			zipCode: data.zipCode === undefined ? currentJob.zipCode : data.zipCode,
-			jobTags: updatedJobTags,
+			tags: updatedJobTags,
 			status: data.status ?? currentJob.status,
+			departmentId: data.departmentId ?? currentJob.departmentId,
 		};
 
 		return this.items[jobIndex];

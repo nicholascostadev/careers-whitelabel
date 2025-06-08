@@ -1,0 +1,55 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Testing Style Guide
+
+This project uses the following conventions for writing tests:
+
+- **Test Framework**: Use Vitest or Jest-style syntax (`describe`, `it`/`test`, `expect`).
+- **Repository Usage**: Use in-memory repositories (e.g., `InMemoryJobsRepository`) for service tests to avoid database dependencies.
+- **Setup**: Initialize repositories and services in a `beforeEach` block.
+- **Test Data**: Use a `createDefaultX` helper function to create entities with sensible defaults, allowing overrides for specific test cases.
+- **Assertions**: Use `expect(...).toEqual(expect.objectContaining({...}))` for object shape matching, and `expect(...).toThrow(ExceptionClass)` for error cases.
+- **Enums**: Use Prisma enums (e.g., `EmploymentType.FULL_TIME`, `JobStatus.OPEN`) for type-safe test data.
+- **Tags**: When asserting tags, use `expect.arrayContaining([expect.objectContaining({ name: "tag" })])`.
+- **Error Handling**: Always test for both success and failure (exception) cases.
+- **Imports**: Import dependencies using absolute paths (e.g., `@/repositories/in-memory/in-memory-jobs-repository`).
+
+## Example Skeleton
+
+```ts
+import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository";
+import { EmploymentType, JobStatus, WorkplaceLocation } from "@prisma/client";
+import { SomeService } from "./some-service";
+import { SomeException } from "@/exceptions/some-exception";
+
+describe("SomeService", () => {
+  let jobsRepository: InMemoryJobsRepository;
+  let someService: SomeService;
+
+  beforeEach(() => {
+    jobsRepository = new InMemoryJobsRepository();
+    someService = new SomeService(jobsRepository);
+  });
+
+  const createDefaultJob = async (override = {}) => {
+    return jobsRepository.create({
+      title: "Default Title",
+      // ...other defaults
+      ...override,
+    });
+  };
+
+  it("should do something", async () => {
+    const job = await createDefaultJob();
+    const result = await someService.execute(job.id);
+    expect(result).toEqual(expect.objectContaining({ id: job.id }));
+  });
+
+  it("should throw SomeException if not found", async () => {
+    await expect(someService.execute("non-existent-id")).rejects.toThrow(SomeException);
+  });
+});
+```

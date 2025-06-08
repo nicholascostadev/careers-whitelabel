@@ -1,18 +1,34 @@
+import { DepartmentNotFoundException } from "@/exceptions/department-not-found";
 import { JobNotFoundException } from "@/exceptions/job-not-found-exception";
+import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository";
 import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository";
 import { EmploymentType, JobStatus, WorkplaceLocation } from "@prisma/client";
 import { UpdateJobService } from "./update-job";
 
 describe("Update Job Service", () => {
 	let jobsRepository: InMemoryJobsRepository;
+	let departmentsRepository: InMemoryDepartmentsRepository;
 	let updateJobService: UpdateJobService;
 
 	beforeEach(() => {
 		jobsRepository = new InMemoryJobsRepository();
-		updateJobService = new UpdateJobService(jobsRepository);
+		departmentsRepository = new InMemoryDepartmentsRepository();
+		updateJobService = new UpdateJobService(
+			jobsRepository,
+			departmentsRepository,
+		);
 	});
 
+	const createDefaultDepartment = async (id: string) => {
+		await departmentsRepository.create({
+			id,
+			name: "Software Engineering",
+		});
+	};
+
 	const createDefaultJob = async (override = {}) => {
+		await createDefaultDepartment("1");
+
 		return jobsRepository.create({
 			title: "Software Engineer",
 			descriptionMarkdown: "Software Engineer description",
@@ -24,7 +40,7 @@ describe("Update Job Service", () => {
 			status: JobStatus.OPEN,
 			salaryMin: 50000,
 			salaryMax: 100000,
-			jobTags: ["javascript", "react"],
+			tags: ["javascript", "react"],
 			zipCode: "10001",
 			...override,
 		});
@@ -192,10 +208,10 @@ describe("Update Job Service", () => {
 
 			const updatedJob = await updateJobService.execute({
 				id: job.id,
-				jobTags: ["typescript", "node"],
+				tags: ["typescript", "node"],
 			});
 
-			expect(updatedJob.jobTags).toEqual([
+			expect(updatedJob.tags).toEqual([
 				expect.objectContaining({ name: "typescript" }),
 				expect.objectContaining({ name: "node" }),
 			]);
@@ -210,6 +226,28 @@ describe("Update Job Service", () => {
 			});
 
 			expect(updatedJob.status).toBe(JobStatus.CLOSED);
+		});
+	});
+
+	describe("department updates", () => {
+		it("should update job department", async () => {
+			const job = await createDefaultJob();
+			await createDefaultDepartment("2");
+
+			const updatedJob = await updateJobService.execute({
+				id: job.id,
+				departmentId: "2",
+			});
+
+			expect(updatedJob.departmentId).toBe("2");
+		});
+
+		it("should not update job department if department does not exist", async () => {
+			const job = await createDefaultJob();
+
+			await expect(
+				updateJobService.execute({ id: job.id, departmentId: "3" }),
+			).rejects.toThrow(DepartmentNotFoundException);
 		});
 	});
 });

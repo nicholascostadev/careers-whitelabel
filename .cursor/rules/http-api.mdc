@@ -1,0 +1,14 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# HTTP API Structure
+
+- The API uses Fastify as the web framework, with CORS and JWT authentication enabled ([src/app.ts](mdc:src/app.ts)).
+- Main route groups:
+  - Organization: [src/http/controllers/organization/routes.ts](mdc:src/http/controllers/organization/routes.ts)
+  - Departments: [src/http/controllers/departments/routes.ts](mdc:src/http/controllers/departments/routes.ts)
+  - Jobs: [src/http/controllers/jobs/routes.ts](mdc:src/http/controllers/jobs/routes.ts)
+- Protected endpoints use the [verifyJwt](mdc:src/http/middlewares/verify-jwt.ts) middleware for authentication.
+- Each route file registers controllers for CRUD and business actions, delegating to service and repository layers.
