@@ -1,5 +1,5 @@
-import { DepartmentWithSameNameException } from "@/exceptions/department-with-same-name-exception";
-import type { DepartmentsRepository } from "@/repositories/departments-repository";
+import { DepartmentWithSameNameException } from "@/exceptions/department-with-same-name-exception.js";
+import type { DepartmentsRepository } from "@/repositories/departments-repository.js";
 
 interface CreateDepartmentRequest {
 	name: string;

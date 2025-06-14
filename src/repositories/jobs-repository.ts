@@ -1,4 +1,5 @@
 import type {
+	Department,
 	EmploymentType,
 	Job,
 	JobStatus,
@@ -7,7 +8,7 @@ import type {
 } from "@prisma/client";
 
 export interface FindManyJobsRequest {
-	departmentId?: string;
+	departmentName?: string;
 	jobTitle?: string;
 	salaryMin?: number;
 	salaryMax?: number;
@@ -27,7 +28,7 @@ export interface CreateJobRequest {
 	workplaceLocation: WorkplaceLocation;
 	employmentType: EmploymentType;
 	status: JobStatus;
-	departmentId: string;
+	departmentName: string;
 	country: string;
 	city: string;
 	zipCode?: string | null;
@@ -36,7 +37,7 @@ export interface CreateJobRequest {
 }
 
 export interface ListJobsResponse {
-	jobs: JobWithTags[];
+	jobs: JobWithTagsAndDepartment[];
 	totalPages: number;
 	totalCount: number;
 }
@@ -53,16 +54,17 @@ export interface UpdateJobRequest {
 	zipCode?: string | null;
 	tags?: string[];
 	status?: JobStatus;
-	departmentId?: string;
+	departmentName?: string;
 }
 
-export interface JobWithTags extends Job {
+export interface JobWithTagsAndDepartment extends Job {
 	tags: JobTag[];
+	department: Department;
 }
 
 export interface JobsRepository {
-	create(data: CreateJobRequest): Promise<JobWithTags>;
-	findById(id: string): Promise<JobWithTags | null>;
+	create(data: CreateJobRequest): Promise<JobWithTagsAndDepartment>;
+	findById(id: string): Promise<JobWithTagsAndDepartment | null>;
 	findMany(data: FindManyJobsRequest, page: number): Promise<ListJobsResponse>;
-	update(id: string, data: UpdateJobRequest): Promise<JobWithTags>;
+	update(id: string, data: UpdateJobRequest): Promise<JobWithTagsAndDepartment>;
 }

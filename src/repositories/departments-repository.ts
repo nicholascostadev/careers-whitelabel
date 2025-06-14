@@ -4,4 +4,5 @@ export interface DepartmentsRepository {
 	findByName(name: string): Promise<Department | null>;
 	findById(id: string): Promise<Department | null>;
 	create(data: Prisma.DepartmentUncheckedCreateInput): Promise<Department>;
+	findAll(): Promise<Department[]>;
 }

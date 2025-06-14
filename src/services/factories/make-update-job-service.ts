@@ -1,6 +1,6 @@
-import { PrismaDepartmentsRepository } from "@/repositories/prisma/prisma-departments-repository";
-import { PrismaJobsRepository } from "@/repositories/prisma/prisma-jobs-repository";
-import { UpdateJobService } from "../jobs/update-job";
+import { PrismaDepartmentsRepository } from "@/repositories/prisma/prisma-departments-repository.js";
+import { PrismaJobsRepository } from "@/repositories/prisma/prisma-jobs-repository.js";
+import { UpdateJobService } from "../jobs/update-job.js";
 
 export function makeUpdateJobService() {
 	const jobsRepository = new PrismaJobsRepository();

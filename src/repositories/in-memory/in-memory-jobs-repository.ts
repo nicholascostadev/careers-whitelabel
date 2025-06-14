@@ -1,4 +1,4 @@
-import type { Job, JobTag } from "@prisma/client";
+import type { Department, Job, JobTag } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import type {
 	CreateJobRequest,
@@ -6,11 +6,22 @@ import type {
 	JobsRepository,
 	ListJobsResponse,
 	UpdateJobRequest,
-} from "../jobs-repository";
+} from "../jobs-repository.js";
+
+type DepartmentsRepository = {
+	findById: (id: string) => Promise<Department | null>;
+	findByName: (name: string) => Promise<Department | null>;
+	create: (data: { id?: string; name: string }) => Promise<Department>;
+};
 
 export class InMemoryJobsRepository implements JobsRepository {
-	items: (Job & { tags: JobTag[] })[] = [];
+	items: (Job & { tags: JobTag[]; department: Department })[] = [];
 	jobTags: string[] = [];
+	departmentsRepository?: DepartmentsRepository;
+
+	constructor(departmentsRepository?: DepartmentsRepository) {
+		this.departmentsRepository = departmentsRepository;
+	}
 
 	async create(data: CreateJobRequest) {
 		const notFoundJobTags = data.tags?.filter(
@@ -27,6 +38,29 @@ export class InMemoryJobsRepository implements JobsRepository {
 			jobId: null,
 		}));
 
+		// Handle department lookup or creation
+		let department: Department;
+
+		if (this.departmentsRepository) {
+			// Try to find existing department by name
+			let existingDepartment = await this.departmentsRepository.findByName(
+				data.departmentName,
+			);
+			if (!existingDepartment) {
+				// Create new department if not found
+				existingDepartment = await this.departmentsRepository.create({
+					name: data.departmentName,
+				});
+			}
+			department = existingDepartment;
+		} else {
+			// Fallback for tests that don't provide departmentsRepository
+			department = {
+				id: randomUUID(),
+				name: data.departmentName,
+			};
+		}
+
 		const job = {
 			...data,
 			id: data.id ?? randomUUID(),
@@ -36,6 +70,8 @@ export class InMemoryJobsRepository implements JobsRepository {
 			salaryMax: data.salaryMax ?? null,
 			tags,
 			updatedAt: new Date(),
+			department,
+			departmentId: department.id,
 		};
 
 		this.items.push(job);
@@ -58,7 +94,7 @@ export class InMemoryJobsRepository implements JobsRepository {
 		page: number,
 	): Promise<ListJobsResponse> {
 		const jobs = this.items.filter((job) => {
-			if (data.departmentId && job.departmentId !== data.departmentId) {
+			if (data.departmentName && job.department.name !== data.departmentName) {
 				return false;
 			}
 
@@ -138,6 +174,34 @@ export class InMemoryJobsRepository implements JobsRepository {
 				jobId: id,
 			})) ?? currentJob.tags;
 
+		// Handle department update
+		let department = currentJob.department;
+
+		if (
+			data.departmentName &&
+			data.departmentName !== currentJob.department.name
+		) {
+			if (this.departmentsRepository) {
+				// Try to find existing department by name
+				let existingDepartment = await this.departmentsRepository.findByName(
+					data.departmentName,
+				);
+				if (!existingDepartment) {
+					// Create new department if not found
+					existingDepartment = await this.departmentsRepository.create({
+						name: data.departmentName,
+					});
+				}
+				department = existingDepartment;
+			} else {
+				// Fallback for tests that don't provide departmentsRepository
+				department = {
+					id: randomUUID(),
+					name: data.departmentName,
+				};
+			}
+		}
+
 		this.items[jobIndex] = {
 			...currentJob,
 			title: data.title ?? currentJob.title,
@@ -154,7 +218,8 @@ export class InMemoryJobsRepository implements JobsRepository {
 			zipCode: data.zipCode === undefined ? currentJob.zipCode : data.zipCode,
 			tags: updatedJobTags,
 			status: data.status ?? currentJob.status,
-			departmentId: data.departmentId ?? currentJob.departmentId,
+			department,
+			departmentId: department.id,
 		};
 
 		return this.items[jobIndex];

@@ -1,11 +1,11 @@
-import { JobApplicationAlreadySubmittedException } from "@/exceptions/job-application-already-submitted-exception";
-import { JobClosedException } from "@/exceptions/job-closed-exception";
-import { JobNotFoundException } from "@/exceptions/job-not-found-exception";
-import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository";
-import { InMemoryJobApplicationsRepository } from "@/repositories/in-memory/in-memory-job-applications-repository";
-import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository";
+import { JobApplicationAlreadySubmittedException } from "@/exceptions/job-application-already-submitted-exception.js";
+import { JobClosedException } from "@/exceptions/job-closed-exception.js";
+import { JobNotFoundException } from "@/exceptions/job-not-found-exception.js";
+import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository.js";
+import { InMemoryJobApplicationsRepository } from "@/repositories/in-memory/in-memory-job-applications-repository.js";
+import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository.js";
 import { EmploymentType, JobStatus, WorkplaceLocation } from "@prisma/client";
-import { ApplyToJobService } from "./apply-to-job";
+import { ApplyToJobService } from "./apply-to-job.js";
 
 describe("Apply to Job Service", () => {
 	let jobsRepository: InMemoryJobsRepository;

@@ -1,9 +1,9 @@
-import { DepartmentNotFoundException } from "@/exceptions/department-not-found";
-import { JobNotFoundException } from "@/exceptions/job-not-found-exception";
-import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository";
-import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository";
+import { DepartmentNotFoundException } from "@/exceptions/department-not-found.js";
+import { JobNotFoundException } from "@/exceptions/job-not-found-exception.js";
+import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository.js";
+import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository.js";
 import { EmploymentType, JobStatus, WorkplaceLocation } from "@prisma/client";
-import { UpdateJobService } from "./update-job";
+import { UpdateJobService } from "./update-job.js";
 
 describe("Update Job Service", () => {
 	let jobsRepository: InMemoryJobsRepository;
@@ -11,18 +11,21 @@ describe("Update Job Service", () => {
 	let updateJobService: UpdateJobService;
 
 	beforeEach(() => {
-		jobsRepository = new InMemoryJobsRepository();
 		departmentsRepository = new InMemoryDepartmentsRepository();
+		jobsRepository = new InMemoryJobsRepository(departmentsRepository);
 		updateJobService = new UpdateJobService(
 			jobsRepository,
 			departmentsRepository,
 		);
 	});
 
-	const createDefaultDepartment = async (id: string) => {
+	const createDefaultDepartment = async (
+		id: string,
+		name = "Software Engineering",
+	) => {
 		await departmentsRepository.create({
 			id,
-			name: "Software Engineering",
+			name,
 		});
 	};
 
@@ -32,7 +35,7 @@ describe("Update Job Service", () => {
 		return jobsRepository.create({
 			title: "Software Engineer",
 			descriptionMarkdown: "Software Engineer description",
-			departmentId: "1",
+			departmentName: "Software Engineering",
 			country: "United States",
 			city: "New York",
 			workplaceLocation: WorkplaceLocation.ON_SITE,
@@ -232,21 +235,21 @@ describe("Update Job Service", () => {
 	describe("department updates", () => {
 		it("should update job department", async () => {
 			const job = await createDefaultJob();
-			await createDefaultDepartment("2");
+			await createDefaultDepartment("2", "Marketing");
 
 			const updatedJob = await updateJobService.execute({
 				id: job.id,
-				departmentId: "2",
+				departmentName: "Marketing",
 			});
 
-			expect(updatedJob.departmentId).toBe("2");
+			expect(updatedJob.department.name).toBe("Marketing");
 		});
 
 		it("should not update job department if department does not exist", async () => {
 			const job = await createDefaultJob();
 
 			await expect(
-				updateJobService.execute({ id: job.id, departmentId: "3" }),
+				updateJobService.execute({ id: job.id, departmentName: "3" }),
 			).rejects.toThrow(DepartmentNotFoundException);
 		});
 	});

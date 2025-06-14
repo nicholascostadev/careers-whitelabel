@@ -1,4 +1,4 @@
-import { Exception } from "./exception";
+import { Exception } from "./exception.js";
 
 export class DepartmentNotFoundException extends Exception {
 	statusCode = 404;

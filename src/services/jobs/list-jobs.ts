@@ -1,8 +1,8 @@
-import type { JobsRepository } from "@/repositories/jobs-repository";
+import type { JobsRepository } from "@/repositories/jobs-repository.js";
 import type { EmploymentType, WorkplaceLocation } from "@prisma/client";
 
 interface ListJobsRequest {
-	departmentId?: string;
+	departmentName?: string;
 	jobTitle?: string;
 	page: number;
 	salaryMin?: number;
@@ -21,7 +21,7 @@ export class ListJobsService {
 	async execute(data: ListJobsRequest) {
 		const jobs = await this.jobsRepository.findMany(
 			{
-				departmentId: data.departmentId,
+				departmentName: data.departmentName,
 				jobTitle: data.jobTitle,
 				tags: data.tags ?? [],
 				salaryMin: data.salaryMin,

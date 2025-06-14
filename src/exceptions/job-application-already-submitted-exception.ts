@@ -1,4 +1,4 @@
-import { Exception } from "./exception";
+import { Exception } from "./exception.js";
 
 export class JobApplicationAlreadySubmittedException extends Exception {
 	statusCode = 400;

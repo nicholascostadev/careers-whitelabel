@@ -1,12 +1,12 @@
-import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository";
+import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository.js";
+import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository.js";
 import {
 	type Department,
 	EmploymentType,
 	JobStatus,
 	WorkplaceLocation,
 } from "@prisma/client";
-import { InMemoryJobsRepository } from "../../repositories/in-memory/in-memory-jobs-repository";
-import { CreateJobService } from "./create-job";
+import { CreateJobService } from "./create-job.js";
 
 describe("Create Job Service", () => {
 	let jobsRepository: InMemoryJobsRepository;

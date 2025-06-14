@@ -1,11 +1,14 @@
-import { makeUpdateJobService } from "@/services/factories/make-update-job-service";
+import { JobDtoSchema } from "@/lib/dtos/job.js";
+import { makeUpdateJobService } from "@/services/factories/make-update-job-service.js";
 import { EmploymentType, JobStatus, WorkplaceLocation } from "@prisma/client";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import z from "zod";
+import z from "zod/v4";
 
 export const UpdateJobParamsSchema = z.object({
 	id: z.string(),
 });
+
+type UpdateJobParams = z.infer<typeof UpdateJobParamsSchema>;
 
 export const UpdateJobBodySchema = z.object({
 	title: z.string().optional(),
@@ -22,11 +25,35 @@ export const UpdateJobBodySchema = z.object({
 	zipCode: z.string().optional(),
 });
 
+type UpdateJobBody = z.infer<typeof UpdateJobBodySchema>;
+
+export const UpdateJobResponseSchema = {
+	200: z.object({
+		job: JobDtoSchema,
+	}),
+};
+
+type UpdateJobReplyType = {
+	[statusCode in keyof typeof UpdateJobResponseSchema]: z.infer<
+		(typeof UpdateJobResponseSchema)[statusCode]
+	>;
+};
+
+export type UpdateJobRequest = FastifyRequest<{
+	Params: UpdateJobParams;
+	Body: UpdateJobBody;
+	Reply: UpdateJobReplyType;
+}>;
+
+export type UpdateJobReply = FastifyReply<{
+	Reply: UpdateJobReplyType;
+}>;
+
 export async function updateJobController(
-	request: FastifyRequest,
-	reply: FastifyReply,
+	request: UpdateJobRequest,
+	reply: UpdateJobReply,
 ) {
-	const { id } = UpdateJobParamsSchema.parse(request.params);
+	const { id } = request.params;
 	const {
 		title,
 		descriptionMarkdown,
@@ -40,7 +67,7 @@ export async function updateJobController(
 		status,
 		tags,
 		zipCode,
-	} = UpdateJobBodySchema.parse(request.body);
+	} = request.body;
 
 	const updateJobService = makeUpdateJobService();
 
@@ -60,7 +87,5 @@ export async function updateJobController(
 		zipCode,
 	});
 
-	return reply.status(200).send({
-		job,
-	});
+	return reply.status(200).send({ job });
 }

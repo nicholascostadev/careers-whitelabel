@@ -1,6 +1,6 @@
-import { DepartmentWithSameNameException } from "@/exceptions/department-with-same-name-exception";
-import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository";
-import { CreateDepartmentService } from "./create-department";
+import { DepartmentWithSameNameException } from "@/exceptions/department-with-same-name-exception.js";
+import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository.js";
+import { CreateDepartmentService } from "./create-department.js";
 
 describe("Create Department Service", () => {
 	let departmentsRepository: InMemoryDepartmentsRepository;

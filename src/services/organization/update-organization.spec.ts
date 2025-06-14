@@ -1,7 +1,7 @@
-import { OrganizationNotCreatedException } from "@/exceptions/organization-not-created";
-import { InMemoryOrganizationRepository } from "@/repositories/in-memory/in-memory-organization-repository";
+import { OrganizationNotCreatedException } from "@/exceptions/organization-not-created.js";
+import { InMemoryOrganizationRepository } from "@/repositories/in-memory/in-memory-organization-repository.js";
 import { beforeEach, describe, expect, it } from "vitest";
-import { UpdateOrganizationService } from "./update-organization";
+import { UpdateOrganizationService } from "./update-organization.js";
 
 describe("Update Organization Service", () => {
 	let organizationRepository: InMemoryOrganizationRepository;

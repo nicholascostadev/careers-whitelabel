@@ -2,14 +2,14 @@ import { db } from "@/lib/infra/database";
 import type {
 	CreateJobRequest,
 	FindManyJobsRequest,
-	JobWithTags,
+	JobWithTagsAndDepartment,
 	JobsRepository,
 	ListJobsResponse,
 	UpdateJobRequest,
 } from "../jobs-repository";
 
 export class PrismaJobsRepository implements JobsRepository {
-	async create(data: CreateJobRequest): Promise<JobWithTags> {
+	async create(data: CreateJobRequest): Promise<JobWithTagsAndDepartment> {
 		const job = await db.job.create({
 			data: {
 				title: data.title,
@@ -31,19 +31,21 @@ export class PrismaJobsRepository implements JobsRepository {
 			},
 			include: {
 				tags: true,
+				department: true,
 			},
 		});
 
 		return job;
 	}
 
-	async findById(id: string): Promise<JobWithTags | null> {
+	async findById(id: string): Promise<JobWithTagsAndDepartment | null> {
 		const job = await db.job.findUnique({
 			where: {
 				id,
 			},
 			include: {
 				tags: true,
+				department: true,
 			},
 		});
 
@@ -59,7 +61,9 @@ export class PrismaJobsRepository implements JobsRepository {
 		const [jobs, totalCount] = await Promise.all([
 			db.job.findMany({
 				where: {
-					departmentId: data.departmentId,
+					department: {
+						name: data.departmentName,
+					},
 					title: data.jobTitle,
 					salaryMin: {
 						gte: data.salaryMin,
@@ -86,11 +90,14 @@ export class PrismaJobsRepository implements JobsRepository {
 				take: 10,
 				include: {
 					tags: true,
+					department: true,
 				},
 			}),
 			db.job.count({
 				where: {
-					departmentId: data.departmentId,
+					department: {
+						name: data.departmentName,
+					},
 					title: data.jobTitle,
 					salaryMin: {
 						gte: data.salaryMin,
@@ -123,7 +130,10 @@ export class PrismaJobsRepository implements JobsRepository {
 		};
 	}
 
-	async update(id: string, data: UpdateJobRequest): Promise<JobWithTags> {
+	async update(
+		id: string,
+		data: UpdateJobRequest,
+	): Promise<JobWithTagsAndDepartment> {
 		const job = await db.job.update({
 			where: {
 				id,
@@ -148,6 +158,7 @@ export class PrismaJobsRepository implements JobsRepository {
 			},
 			include: {
 				tags: true,
+				department: true,
 			},
 		});
 

@@ -1,5 +1,5 @@
-import { OrganizationNotCreatedException } from "@/exceptions/organization-not-created";
-import type { OrganizationRepository } from "@/repositories/organization-repository";
+import { OrganizationNotCreatedException } from "@/exceptions/organization-not-created.js";
+import type { OrganizationRepository } from "@/repositories/organization-repository.js";
 
 export interface UpdateOrganizationRequest {
 	name?: string;

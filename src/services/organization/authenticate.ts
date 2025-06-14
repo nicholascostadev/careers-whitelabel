@@ -1,6 +1,6 @@
-import { InvalidPasswordException } from "@/exceptions/invalid-password-exception";
-import { OrganizationNotCreatedException } from "@/exceptions/organization-not-created";
-import type { OrganizationRepository } from "@/repositories/organization-repository";
+import { InvalidPasswordException } from "@/exceptions/invalid-password-exception.js";
+import { OrganizationNotCreatedException } from "@/exceptions/organization-not-created.js";
+import type { OrganizationRepository } from "@/repositories/organization-repository.js";
 import { compare } from "bcryptjs";
 
 interface AuthenticateOrganizationRequest {

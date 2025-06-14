@@ -1,4 +1,4 @@
-import { ResourceNotFoundException } from "./resource-not-found-exception";
+import { ResourceNotFoundException } from "./resource-not-found-exception.js";
 
 export class JobNotFoundException extends ResourceNotFoundException {
 	constructor() {

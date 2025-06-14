@@ -1,5 +1,5 @@
-import { PrismaOrganizationRepository } from "@/repositories/prisma/prisma-organization-repository";
-import { GetOrganizationInfoService } from "../organization/get-organization-info";
+import { PrismaOrganizationRepository } from "@/repositories/prisma/prisma-organization-repository.js";
+import { GetOrganizationInfoService } from "../organization/get-organization-info.js";
 
 export function makeGetOrganizationInfoService() {
 	const organizationRepository = new PrismaOrganizationRepository();

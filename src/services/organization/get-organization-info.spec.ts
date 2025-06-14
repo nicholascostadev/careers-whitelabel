@@ -1,5 +1,5 @@
-import { InMemoryOrganizationRepository } from "@/repositories/in-memory/in-memory-organization-repository";
-import { GetOrganizationInfoService } from "./get-organization-info";
+import { InMemoryOrganizationRepository } from "@/repositories/in-memory/in-memory-organization-repository.js";
+import { GetOrganizationInfoService } from "./get-organization-info.js";
 
 describe("Get Organization Info Service", () => {
 	let organizationRepository: InMemoryOrganizationRepository;
@@ -15,6 +15,10 @@ describe("Get Organization Info Service", () => {
 	it("should return the organization info", async () => {
 		const organizationInfo = await getOrganizationInfoService.execute();
 
-		expect(organizationInfo).toEqual(organizationRepository.organization);
+		expect(organizationInfo).toEqual(
+			expect.objectContaining({
+				organization: organizationRepository.organization,
+			}),
+		);
 	});
 });

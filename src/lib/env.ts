@@ -1,5 +1,5 @@
 import "dotenv/config";
-import z from "zod";
+import z from "zod/v4";
 
 const _env = z.object({
 	NODE_ENV: z
@@ -8,7 +8,6 @@ const _env = z.object({
 	PORT: z.number().default(8080),
 	DATABASE_URL: z.string(),
 	JWT_SECRET: z.string(),
-	ORGANIZATION_ID: z.string().uuid(),
 });
 
 const parsedEnv = _env.safeParse(process.env);

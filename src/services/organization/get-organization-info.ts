@@ -1,12 +1,14 @@
-import type { OrganizationRepository } from "@/repositories/organization-repository";
+import type { OrganizationRepository } from "@/repositories/organization-repository.js";
 
 export class GetOrganizationInfoService {
 	constructor(private organizationRepository: OrganizationRepository) {}
 
 	async execute() {
-		const organizationInfo =
+		const organization =
 			await this.organizationRepository.getOrganizationInfo();
 
-		return organizationInfo;
+		return {
+			organization,
+		};
 	}
 }

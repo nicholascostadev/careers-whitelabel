@@ -1,21 +1,46 @@
-import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository";
+import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository.js";
+import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository.js";
 import { EmploymentType, JobStatus, WorkplaceLocation } from "@prisma/client";
-import { ListJobsService } from "./list-jobs";
+import { ListJobsService } from "./list-jobs.js";
 
 describe("List Jobs Service", () => {
 	let jobsRepository: InMemoryJobsRepository;
+	let departmentsRepository: InMemoryDepartmentsRepository;
 	let listJobsService: ListJobsService;
 
 	beforeEach(() => {
-		jobsRepository = new InMemoryJobsRepository();
+		departmentsRepository = new InMemoryDepartmentsRepository();
+		jobsRepository = new InMemoryJobsRepository(departmentsRepository);
 		listJobsService = new ListJobsService(jobsRepository);
 	});
 
-	const createDefaultJob = async (override = {}) => {
+	const createDefaultJob = async (
+		override: Partial<{
+			title: string;
+			descriptionMarkdown: string;
+			departmentName: string;
+			country: string;
+			city: string;
+			workplaceLocation: WorkplaceLocation;
+			employmentType: EmploymentType;
+			status: JobStatus;
+			tags: string[];
+			salaryMin?: number;
+			salaryMax?: number;
+		}> = {},
+	) => {
+		// Ensure default department exists
+		if (!override.departmentName) {
+			await departmentsRepository.create({
+				id: "1",
+				name: "Engineering",
+			});
+		}
+
 		return jobsRepository.create({
 			title: "Software Engineer",
 			descriptionMarkdown: "Software Engineer description",
-			departmentId: "1",
+			departmentName: "Engineering",
 			country: "United States",
 			city: "New York",
 			workplaceLocation: WorkplaceLocation.ON_SITE,
@@ -31,7 +56,7 @@ describe("List Jobs Service", () => {
 			await createDefaultJob();
 
 			const { jobs, totalCount } = await listJobsService.execute({
-				departmentId: "1",
+				departmentName: "Engineering",
 				jobTitle: "Software Engineer",
 				page: 1,
 			});
@@ -41,7 +66,9 @@ describe("List Jobs Service", () => {
 			expect(jobs[0]).toEqual(
 				expect.objectContaining({
 					title: "Software Engineer",
-					departmentId: "1",
+					department: expect.objectContaining({
+						name: "Engineering",
+					}),
 				}),
 			);
 		});
@@ -66,10 +93,16 @@ describe("List Jobs Service", () => {
 
 		it("should be able to list jobs by department", async () => {
 			await createDefaultJob();
-			await createDefaultJob({ departmentId: "2" });
+
+			// Create second department and job
+			await departmentsRepository.create({
+				id: "2",
+				name: "Marketing",
+			});
+			await createDefaultJob({ departmentName: "Marketing" });
 
 			const { jobs, totalCount } = await listJobsService.execute({
-				departmentId: "1",
+				departmentName: "Engineering",
 				page: 1,
 			});
 
@@ -77,7 +110,9 @@ describe("List Jobs Service", () => {
 			expect(totalCount).toBe(1);
 			expect(jobs[0]).toEqual(
 				expect.objectContaining({
-					departmentId: "1",
+					department: expect.objectContaining({
+						name: "Engineering",
+					}),
 				}),
 			);
 		});
@@ -236,7 +271,7 @@ describe("List Jobs Service", () => {
 			await createDefaultJob();
 
 			const { jobs, totalCount } = await listJobsService.execute({
-				page: 3,
+				page: 10,
 			});
 
 			expect(jobs).toHaveLength(0);

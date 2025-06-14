@@ -1,16 +1,41 @@
-import { makeGetJobInfoService } from "@/services/factories/make-get-job-info-service";
+import { ExceptionSchema } from "@/exceptions/exceptionSchema.js";
+import { JobDtoSchema } from "@/lib/dtos/job.js";
+import { makeGetJobInfoService } from "@/services/factories/make-get-job-info-service.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { z } from "zod";
+import { z } from "zod/v4";
 
-const GetJobInfoParamsSchema = z.object({
-	id: z.string(),
+export const GetJobInfoParamsSchema = z.object({
+	id: z.uuid(),
 });
 
+type GetJobInfoParams = z.infer<typeof GetJobInfoParamsSchema>;
+
+export const GetJobInfoResponseSchema = {
+	200: z.object({
+		job: JobDtoSchema,
+	}),
+	404: ExceptionSchema,
+};
+
+type GetJobInfoReplyType = {
+	[statusCode in keyof typeof GetJobInfoResponseSchema]: z.infer<
+		(typeof GetJobInfoResponseSchema)[statusCode]
+	>;
+};
+
+export type GetJobInfoRequest = FastifyRequest<{
+	Params: GetJobInfoParams;
+	Reply: GetJobInfoReplyType;
+}>;
+
+export type GetJobInfoReply = FastifyReply<{
+	Reply: GetJobInfoReplyType;
+}>;
 export async function getJobInfoController(
-	request: FastifyRequest,
-	reply: FastifyReply,
+	request: GetJobInfoRequest,
+	reply: GetJobInfoReply,
 ) {
-	const { id } = GetJobInfoParamsSchema.parse(request.params);
+	const { id } = request.params;
 
 	const getJobInfoService = makeGetJobInfoService();
 

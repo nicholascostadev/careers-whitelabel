@@ -32,4 +32,9 @@ export class PrismaDepartmentsRepository implements DepartmentsRepository {
 
 		return department ?? null;
 	}
+
+	async findAll(): Promise<Department[]> {
+		const departments = await db.department.findMany();
+		return departments;
+	}
 }

@@ -1,5 +1,5 @@
-import { PrismaDepartmentsRepository } from "@/repositories/prisma/prisma-departments-repository";
-import { CreateDepartmentService } from "../departments/create-department";
+import { PrismaDepartmentsRepository } from "@/repositories/prisma/prisma-departments-repository.js";
+import { CreateDepartmentService } from "../departments/create-department.js";
 
 export function makeCreateDepartmentService() {
 	const departmentsRepository = new PrismaDepartmentsRepository();

@@ -1,22 +1,31 @@
-import { JobNotFoundException } from "@/exceptions/job-not-found-exception";
-import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository";
+import { JobNotFoundException } from "@/exceptions/job-not-found-exception.js";
+import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository.js";
+import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository.js";
 import { EmploymentType, JobStatus, WorkplaceLocation } from "@prisma/client";
-import { GetJobInfoService } from "./get-job-info";
+import { GetJobInfoService } from "./get-job-info.js";
 
 describe("GetJobInfoService", () => {
 	let jobsRepository: InMemoryJobsRepository;
+	let departmentsRepository: InMemoryDepartmentsRepository;
 	let getJobInfoService: GetJobInfoService;
 
 	beforeEach(() => {
-		jobsRepository = new InMemoryJobsRepository();
+		departmentsRepository = new InMemoryDepartmentsRepository();
+		jobsRepository = new InMemoryJobsRepository(departmentsRepository);
 		getJobInfoService = new GetJobInfoService(jobsRepository);
 	});
 
 	const createDefaultJob = async (override = {}) => {
+		// Ensure department exists
+		await departmentsRepository.create({
+			id: "1",
+			name: "Engineering",
+		});
+
 		return jobsRepository.create({
 			title: "Software Engineer",
 			descriptionMarkdown: "Software Engineer description",
-			departmentId: "1",
+			departmentName: "Engineering",
 			country: "United States",
 			city: "New York",
 			workplaceLocation: WorkplaceLocation.ON_SITE,

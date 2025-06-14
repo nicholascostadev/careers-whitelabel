@@ -1,8 +1,18 @@
 import type { FastifyInstance } from "fastify";
-import { authenticateOrganizationController } from "./authenticate";
-import { getOrganizationInfoController } from "./get-organization-info";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
+import {
+	GetOrganizationInfoResponseSchema,
+	getOrganizationInfoController,
+} from "./get-organization-info.js";
 
 export const organizationRoutes = (app: FastifyInstance) => {
-	app.get("/info", getOrganizationInfoController);
-	app.post("/authenticate", authenticateOrganizationController);
+	app.withTypeProvider<ZodTypeProvider>().route({
+		method: "get",
+		url: "/info",
+		schema: {
+			tags: ["organization"],
+			response: GetOrganizationInfoResponseSchema,
+		},
+		handler: getOrganizationInfoController,
+	});
 };

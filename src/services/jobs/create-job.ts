@@ -1,6 +1,6 @@
-import { DepartmentNotFoundException } from "@/exceptions/department-not-found";
-import type { DepartmentsRepository } from "@/repositories/departments-repository";
-import type { JobsRepository } from "@/repositories/jobs-repository";
+import { DepartmentNotFoundException } from "@/exceptions/department-not-found.js";
+import type { DepartmentsRepository } from "@/repositories/departments-repository.js";
+import type { JobsRepository } from "@/repositories/jobs-repository.js";
 import {
 	type EmploymentType,
 	JobStatus,

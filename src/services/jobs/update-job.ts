@@ -1,7 +1,7 @@
-import { DepartmentNotFoundException } from "@/exceptions/department-not-found";
-import { JobNotFoundException } from "@/exceptions/job-not-found-exception";
-import type { DepartmentsRepository } from "@/repositories/departments-repository";
-import type { JobsRepository } from "@/repositories/jobs-repository";
+import { DepartmentNotFoundException } from "@/exceptions/department-not-found.js";
+import { JobNotFoundException } from "@/exceptions/job-not-found-exception.js";
+import type { DepartmentsRepository } from "@/repositories/departments-repository.js";
+import type { JobsRepository } from "@/repositories/jobs-repository.js";
 import type {
 	EmploymentType,
 	JobStatus,
@@ -14,7 +14,7 @@ interface UpdateJobRequest {
 	descriptionMarkdown?: string;
 	salaryMin?: number | null;
 	salaryMax?: number | null;
-	departmentId?: string;
+	departmentName?: string;
 	workplaceLocation?: WorkplaceLocation;
 	employmentType?: EmploymentType;
 	country?: string;
@@ -37,9 +37,9 @@ export class UpdateJobService {
 			throw new JobNotFoundException();
 		}
 
-		if (data.departmentId) {
-			const department = await this.departmentsRepository.findById(
-				data.departmentId,
+		if (data.departmentName) {
+			const department = await this.departmentsRepository.findByName(
+				data.departmentName,
 			);
 
 			if (!department) {

@@ -1,8 +1,11 @@
 import type { Department, Prisma } from "@prisma/client";
 import { randomUUID } from "node:crypto";
-import type { DepartmentsRepository } from "../departments-repository";
+import type { DepartmentsRepository } from "../departments-repository.js";
 
 export class InMemoryDepartmentsRepository implements DepartmentsRepository {
+	findAll(): Promise<Department[]> {
+		throw new Error("Method not implemented.");
+	}
 	items: Department[] = [];
 
 	async create({ id, ...data }: Prisma.DepartmentUncheckedCreateInput) {
