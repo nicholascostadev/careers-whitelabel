@@ -1,3 +1,4 @@
+import type { CreateDepartmentDTO } from "@/lib/dtos/create-department.dto.js";
 import { makeCreateDepartmentService } from "@/services/factories/make-create-department-service.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import z from "zod/v4";
@@ -38,11 +39,20 @@ export async function createDepartmentsController(
 	request: CreateDepartmentRequest,
 	reply: CreateDepartmentReply,
 ) {
+	const { name } = request.body;
+
+	const createDepartmentDTO: CreateDepartmentDTO = {
+		name,
+	};
+
 	const createDepartmentService = makeCreateDepartmentService();
 
-	const department = await createDepartmentService.execute(request.body);
+	const department = await createDepartmentService.execute(createDepartmentDTO);
 
 	return reply.status(201).send({
-		department,
+		department: {
+			id: department.id,
+			name: department.name,
+		},
 	});
 }

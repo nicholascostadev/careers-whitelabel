@@ -5,7 +5,6 @@ export class GetJobInfoService {
 	constructor(private jobsRepository: JobsRepository) {}
 
 	async execute(id: string) {
-		console.log("id", id);
 		const job = await this.jobsRepository.findById(id);
 
 		if (!job) {

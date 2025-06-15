@@ -1,6 +1,6 @@
-import { app } from "@/app.js";
 import { UnauthorizedException } from "@/exceptions/unauthorized-exception.js";
-import { generateTokens } from "@/lib/generateTokens.js";
+import type { RefreshTokenDTO } from "@/lib/dtos/refresh-token.dto.js";
+import { makeRefreshTokenService } from "@/services/factories/make-refresh-token-service.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod/v4";
 
@@ -37,13 +37,14 @@ export async function refreshAccessTokenController(
 		throw new UnauthorizedException();
 	}
 
-	const { sub: organizationId } = app.jwt.verify(refreshTokenCookie) as {
-		sub: string;
+	const refreshTokenDTO: RefreshTokenDTO = {
+		refreshToken: refreshTokenCookie,
 	};
 
-	const { accessToken, refreshToken } = generateTokens({
-		organizationId,
-	});
+	const refreshTokenService = makeRefreshTokenService();
+
+	const { accessToken, refreshToken } =
+		await refreshTokenService.execute(refreshTokenDTO);
 
 	reply.setCookie("refreshToken", refreshToken, {
 		httpOnly: true, // Prevents client-side JavaScript from accessing the cookie

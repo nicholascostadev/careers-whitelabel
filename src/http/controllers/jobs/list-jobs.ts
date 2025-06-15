@@ -1,4 +1,5 @@
 import { JobDtoSchema } from "@/lib/dtos/job.js";
+import type { ListJobsDTO } from "@/lib/dtos/list-jobs.dto.js";
 import { makeListJobsService } from "@/services/factories/make-list-jobs-service.js";
 import { EmploymentType, WorkplaceLocation } from "@prisma/client";
 import type { FastifyReply, FastifyRequest } from "fastify";
@@ -60,9 +61,7 @@ export async function listJobsController(
 		tags,
 	} = request.query;
 
-	const listJobsService = makeListJobsService();
-
-	const { jobs, totalCount, totalPages } = await listJobsService.execute({
+	const listJobsDTO: ListJobsDTO = {
 		page,
 		departmentName,
 		jobTitle,
@@ -73,7 +72,12 @@ export async function listJobsController(
 		country,
 		city,
 		tags,
-	});
+	};
+
+	const listJobsService = makeListJobsService();
+
+	const { jobs, totalCount, totalPages } =
+		await listJobsService.execute(listJobsDTO);
 
 	return reply.status(200).send({
 		jobs,

@@ -1,7 +1,7 @@
 ---
 description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 # Project Structure Guide
 
@@ -9,9 +9,11 @@ This project is organized as follows:
 
 - The main application entry point is [src/app.ts](mdc:src/app.ts).
 - HTTP routes and controllers are located in [src/http/controllers/](mdc:src/http/controllers), with subdirectories for jobs, departments, and organization.
-- Business logic is implemented in [src/services/](mdc:src/services), organized by domain (jobs, departments, organization, job-applications, factories).
-- Data access and repository patterns are in [src/repositories/](mdc:src/repositories), with both in-memory and Prisma-backed implementations.
-- Shared types and DTOs are in [src/@types/](mdc:src/@types) and [src/lib/dtos/](mdc:src/lib/dtos).
+- Domain models containing business logic and data validation are in [src/models/](mdc:src/models).
+- Business logic is implemented in application services in [src/services/](mdc:src/services), organized by domain. Services orchestrate use cases by coordinating domain models and repositories.
+- Data access is handled by repositories in [src/repositories/](mdc:src/repositories). These provide an abstraction over the database, with both in-memory and Prisma-backed implementations.
+- Shared Data Transfer Objects (DTOs) are in [src/lib/dtos/](mdc:src/lib/dtos).
+- Custom shared types are in [src/@types/](mdc:src/@types).
 - Middleware (such as JWT verification) is in [src/http/middlewares/](mdc:src/http/middlewares).
 - Environment configuration is handled in [src/lib/env.ts](mdc:src/lib/env.ts).
 - Database schema and migrations are managed with Prisma in [prisma/schema.prisma](mdc:prisma/schema.prisma) and [prisma/migrations/](mdc:prisma/migrations).

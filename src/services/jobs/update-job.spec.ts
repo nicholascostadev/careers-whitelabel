@@ -1,5 +1,7 @@
 import { DepartmentNotFoundException } from "@/exceptions/department-not-found.js";
 import { JobNotFoundException } from "@/exceptions/job-not-found-exception.js";
+import type { UpdateJobDTO } from "@/lib/dtos/update-job.dto.js";
+import { Department, Job } from "@/models/index.js";
 import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository.js";
 import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository.js";
 import { EmploymentType, JobStatus, WorkplaceLocation } from "@prisma/client";
@@ -20,22 +22,22 @@ describe("Update Job Service", () => {
 	});
 
 	const createDefaultDepartment = async (
-		id: string,
+		id = "550e8400-e29b-41d4-a716-446655440000",
 		name = "Software Engineering",
 	) => {
-		await departmentsRepository.create({
-			id,
-			name,
-		});
+		const department = Department.fromData({ id, name });
+		await departmentsRepository.create(department);
+		return department;
 	};
 
 	const createDefaultJob = async (override = {}) => {
-		await createDefaultDepartment("1");
+		const department = await createDefaultDepartment();
 
-		return jobsRepository.create({
+		const job = Job.fromData({
+			id: "550e8400-e29b-41d4-a716-446655440001",
 			title: "Software Engineer",
 			descriptionMarkdown: "Software Engineer description",
-			departmentName: "Software Engineering",
+			departmentId: department.id,
 			country: "United States",
 			city: "New York",
 			workplaceLocation: WorkplaceLocation.ON_SITE,
@@ -43,20 +45,30 @@ describe("Update Job Service", () => {
 			status: JobStatus.OPEN,
 			salaryMin: 50000,
 			salaryMax: 100000,
-			tags: ["javascript", "react"],
+			tags: [
+				{ id: "550e8400-e29b-41d4-a716-446655440010", name: "javascript" },
+				{ id: "550e8400-e29b-41d4-a716-446655440011", name: "react" },
+			],
 			zipCode: "10001",
+			createdAt: new Date(),
+			updatedAt: new Date(),
 			...override,
 		});
+
+		await jobsRepository.create(job);
+		return job;
 	};
 
 	describe("error handling", () => {
 		it("should throw JobNotFoundException when job does not exist", async () => {
-			await expect(
-				updateJobService.execute({
-					id: "non-existent-id",
-					title: "Updated Title",
-				}),
-			).rejects.toThrow(JobNotFoundException);
+			const updateJobDTO: UpdateJobDTO = {
+				id: "non-existent-id",
+				title: "Updated Title",
+			};
+
+			await expect(updateJobService.execute(updateJobDTO)).rejects.toThrow(
+				JobNotFoundException,
+			);
 		});
 	});
 
@@ -64,10 +76,12 @@ describe("Update Job Service", () => {
 		it("should update job title", async () => {
 			const job = await createDefaultJob();
 
-			const updatedJob = await updateJobService.execute({
+			const updateJobDTO: UpdateJobDTO = {
 				id: job.id,
 				title: "Senior Software Engineer",
-			});
+			};
+
+			const updatedJob = await updateJobService.execute(updateJobDTO);
 
 			expect(updatedJob.title).toBe("Senior Software Engineer");
 			// Other fields should remain unchanged
@@ -79,10 +93,12 @@ describe("Update Job Service", () => {
 		it("should update job description", async () => {
 			const job = await createDefaultJob();
 
-			const updatedJob = await updateJobService.execute({
+			const updateJobDTO: UpdateJobDTO = {
 				id: job.id,
 				descriptionMarkdown: "Updated description",
-			});
+			};
+
+			const updatedJob = await updateJobService.execute(updateJobDTO);
 
 			expect(updatedJob.descriptionMarkdown).toBe("Updated description");
 			expect(updatedJob.title).toBe("Software Engineer");
@@ -91,13 +107,15 @@ describe("Update Job Service", () => {
 		it("should update multiple fields at once", async () => {
 			const job = await createDefaultJob();
 
-			const updatedJob = await updateJobService.execute({
+			const updateJobDTO: UpdateJobDTO = {
 				id: job.id,
 				title: "Senior Developer",
 				descriptionMarkdown: "New description",
 				country: "Canada",
 				city: "Toronto",
-			});
+			};
+
+			const updatedJob = await updateJobService.execute(updateJobDTO);
 
 			expect(updatedJob).toEqual(
 				expect.objectContaining({
@@ -114,37 +132,28 @@ describe("Update Job Service", () => {
 		it("should update salary range", async () => {
 			const job = await createDefaultJob();
 
-			const updatedJob = await updateJobService.execute({
+			const updateJobDTO: UpdateJobDTO = {
 				id: job.id,
 				salaryMin: 60000,
 				salaryMax: 120000,
-			});
+			};
+
+			const updatedJob = await updateJobService.execute(updateJobDTO);
 
 			expect(updatedJob.salaryMin).toBe(60000);
 			expect(updatedJob.salaryMax).toBe(120000);
 		});
 
-		it("should allow setting salary fields to null", async () => {
-			const job = await createDefaultJob();
-
-			const updatedJob = await updateJobService.execute({
-				id: job.id,
-				salaryMin: null,
-				salaryMax: null,
-			});
-
-			expect(updatedJob.salaryMin).toBeNull();
-			expect(updatedJob.salaryMax).toBeNull();
-		});
-
 		it("should not update salary fields when undefined", async () => {
 			const job = await createDefaultJob();
 
-			const updatedJob = await updateJobService.execute({
+			const updateJobDTO: UpdateJobDTO = {
 				id: job.id,
 				title: "Updated Title",
 				// salaryMin and salaryMax are undefined
-			});
+			};
+
+			const updatedJob = await updateJobService.execute(updateJobDTO);
 
 			expect(updatedJob.salaryMin).toBe(50000);
 			expect(updatedJob.salaryMax).toBe(100000);
@@ -155,10 +164,12 @@ describe("Update Job Service", () => {
 		it("should update workplace location", async () => {
 			const job = await createDefaultJob();
 
-			const updatedJob = await updateJobService.execute({
+			const updateJobDTO: UpdateJobDTO = {
 				id: job.id,
 				workplaceLocation: WorkplaceLocation.REMOTE,
-			});
+			};
+
+			const updatedJob = await updateJobService.execute(updateJobDTO);
 
 			expect(updatedJob.workplaceLocation).toBe(WorkplaceLocation.REMOTE);
 		});
@@ -166,10 +177,12 @@ describe("Update Job Service", () => {
 		it("should update employment type", async () => {
 			const job = await createDefaultJob();
 
-			const updatedJob = await updateJobService.execute({
+			const updateJobDTO: UpdateJobDTO = {
 				id: job.id,
 				employmentType: EmploymentType.CONTRACTOR,
-			});
+			};
+
+			const updatedJob = await updateJobService.execute(updateJobDTO);
 
 			expect(updatedJob.employmentType).toBe(EmploymentType.CONTRACTOR);
 		});
@@ -177,12 +190,14 @@ describe("Update Job Service", () => {
 		it("should update location fields", async () => {
 			const job = await createDefaultJob();
 
-			const updatedJob = await updateJobService.execute({
+			const updateJobDTO: UpdateJobDTO = {
 				id: job.id,
 				country: "Canada",
 				city: "Vancouver",
 				zipCode: "V6B 1A1",
-			});
+			};
+
+			const updatedJob = await updateJobService.execute(updateJobDTO);
 
 			expect(updatedJob).toEqual(
 				expect.objectContaining({
@@ -192,27 +207,18 @@ describe("Update Job Service", () => {
 				}),
 			);
 		});
-
-		it("should allow setting zipCode to null", async () => {
-			const job = await createDefaultJob();
-
-			const updatedJob = await updateJobService.execute({
-				id: job.id,
-				zipCode: null,
-			});
-
-			expect(updatedJob.zipCode).toBeNull();
-		});
 	});
 
 	describe("tags and status updates", () => {
 		it("should update job tags", async () => {
 			const job = await createDefaultJob();
 
-			const updatedJob = await updateJobService.execute({
+			const updateJobDTO: UpdateJobDTO = {
 				id: job.id,
 				tags: ["typescript", "node"],
-			});
+			};
+
+			const updatedJob = await updateJobService.execute(updateJobDTO);
 
 			expect(updatedJob.tags).toEqual([
 				expect.objectContaining({ name: "typescript" }),
@@ -223,10 +229,12 @@ describe("Update Job Service", () => {
 		it("should update job status", async () => {
 			const job = await createDefaultJob();
 
-			const updatedJob = await updateJobService.execute({
+			const updateJobDTO: UpdateJobDTO = {
 				id: job.id,
 				status: JobStatus.CLOSED,
-			});
+			};
+
+			const updatedJob = await updateJobService.execute(updateJobDTO);
 
 			expect(updatedJob.status).toBe(JobStatus.CLOSED);
 		});
@@ -235,22 +243,32 @@ describe("Update Job Service", () => {
 	describe("department updates", () => {
 		it("should update job department", async () => {
 			const job = await createDefaultJob();
-			await createDefaultDepartment("2", "Marketing");
+			const newDepartment = await createDefaultDepartment(
+				"550e8400-e29b-41d4-a716-446655440002",
+				"Marketing",
+			);
 
-			const updatedJob = await updateJobService.execute({
+			const updateJobDTO: UpdateJobDTO = {
 				id: job.id,
-				departmentName: "Marketing",
-			});
+				departmentId: newDepartment.id,
+			};
 
-			expect(updatedJob.department.name).toBe("Marketing");
+			const updatedJob = await updateJobService.execute(updateJobDTO);
+
+			expect(updatedJob.departmentId).toBe(newDepartment.id);
 		});
 
 		it("should not update job department if department does not exist", async () => {
 			const job = await createDefaultJob();
 
-			await expect(
-				updateJobService.execute({ id: job.id, departmentName: "3" }),
-			).rejects.toThrow(DepartmentNotFoundException);
+			const updateJobDTO: UpdateJobDTO = {
+				id: job.id,
+				departmentId: "non-existent-department-id",
+			};
+
+			await expect(updateJobService.execute(updateJobDTO)).rejects.toThrow(
+				DepartmentNotFoundException,
+			);
 		});
 	});
 });

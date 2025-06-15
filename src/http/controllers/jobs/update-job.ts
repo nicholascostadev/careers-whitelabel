@@ -1,4 +1,5 @@
 import { JobDtoSchema } from "@/lib/dtos/job.js";
+import type { UpdateJobDTO } from "@/lib/dtos/update-job.dto.js";
 import { makeUpdateJobService } from "@/services/factories/make-update-job-service.js";
 import { EmploymentType, JobStatus, WorkplaceLocation } from "@prisma/client";
 import type { FastifyReply, FastifyRequest } from "fastify";
@@ -69,9 +70,7 @@ export async function updateJobController(
 		zipCode,
 	} = request.body;
 
-	const updateJobService = makeUpdateJobService();
-
-	const job = await updateJobService.execute({
+	const updateJobDTO: UpdateJobDTO = {
 		id,
 		title,
 		descriptionMarkdown,
@@ -85,7 +84,11 @@ export async function updateJobController(
 		status,
 		tags,
 		zipCode,
-	});
+	};
+
+	const updateJobService = makeUpdateJobService();
+
+	const job = await updateJobService.execute(updateJobDTO);
 
 	return reply.status(200).send({ job });
 }

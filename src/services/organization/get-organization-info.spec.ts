@@ -17,7 +17,11 @@ describe("Get Organization Info Service", () => {
 
 		expect(organizationInfo).toEqual(
 			expect.objectContaining({
-				organization: organizationRepository.organization,
+				organization: expect.objectContaining({
+					id: "550e8400-e29b-41d4-a716-446655440000",
+					name: "Default Organization",
+					email: "test@organization.com",
+				}),
 			}),
 		);
 	});

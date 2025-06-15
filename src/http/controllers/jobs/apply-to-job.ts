@@ -1,4 +1,5 @@
 import { ExceptionSchema } from "@/exceptions/exceptionSchema.js";
+import type { ApplyToJobDTO } from "@/lib/dtos/apply-to-job.dto.js";
 import { makeApplyToJobService } from "@/services/factories/make-apply-to-job-service.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import z from "zod/v4";
@@ -13,8 +14,8 @@ export const ApplyToJobBodySchema = z.object({
 	applicantFirstName: z.string(),
 	applicantLastName: z.string(),
 	applicantEmail: z.string(),
-	applicantPhone: z.string(),
-	applicantResumeUrl: z.string(),
+	applicantPhone: z.string().optional(),
+	applicantResumeUrl: z.string().optional(),
 });
 
 type ApplyToJobBody = z.infer<typeof ApplyToJobBodySchema>;
@@ -60,18 +61,23 @@ export async function applyToJobController(
 		applicantResumeUrl,
 	} = request.body;
 
-	const applyToJobService = makeApplyToJobService();
-
-	const jobApplication = await applyToJobService.execute({
+	const applyToJobDTO: ApplyToJobDTO = {
 		jobId: id,
 		applicantFirstName,
 		applicantLastName,
 		applicantEmail,
 		applicantPhone,
 		applicantResumeUrl,
-	});
+	};
+
+	const applyToJobService = makeApplyToJobService();
+
+	const jobApplication = await applyToJobService.execute(applyToJobDTO);
 
 	return reply.status(201).send({
-		jobApplication,
+		jobApplication: {
+			id: jobApplication.id,
+			jobId: jobApplication.jobId,
+		},
 	});
 }

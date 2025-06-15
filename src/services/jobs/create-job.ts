@@ -1,25 +1,8 @@
 import { DepartmentNotFoundException } from "@/exceptions/department-not-found.js";
+import type { CreateJobDto } from "@/lib/dtos/create-job.dto.js";
+import { Department, Job, Location, SalaryRange } from "@/models/index.js";
 import type { DepartmentsRepository } from "@/repositories/departments-repository.js";
 import type { JobsRepository } from "@/repositories/jobs-repository.js";
-import {
-	type EmploymentType,
-	JobStatus,
-	type WorkplaceLocation,
-} from "@prisma/client";
-
-interface CreateJobRequest {
-	title: string;
-	descriptionMarkdown: string;
-	departmentId: string;
-	country: string;
-	city: string;
-	workplaceLocation: WorkplaceLocation;
-	employmentType: EmploymentType;
-	salaryMin?: number;
-	salaryMax?: number;
-	status?: JobStatus;
-	tags?: string[];
-}
 
 export class CreateJobService {
 	constructor(
@@ -27,21 +10,53 @@ export class CreateJobService {
 		private departmentsRepository: DepartmentsRepository,
 	) {}
 
-	async execute(data: CreateJobRequest) {
-		const department = await this.departmentsRepository.findById(
-			data.departmentId,
+	async execute(dto: CreateJobDto): Promise<Job> {
+		const departmentData = await this.departmentsRepository.findById(
+			dto.departmentId,
 		);
 
-		if (!department) {
+		if (!departmentData) {
 			throw new DepartmentNotFoundException();
 		}
 
-		const job = await this.jobsRepository.create({
-			...data,
-			status: data.status ?? JobStatus.OPEN,
-			tags: data.tags ?? [],
+		const department = Department.fromData({
+			id: departmentData.id,
+			name: departmentData.name,
 		});
 
-		return job;
+		if (dto.salaryMin && dto.salaryMax) {
+			try {
+				SalaryRange.create(dto.salaryMin, dto.salaryMax);
+			} catch {
+				throw new Error(
+					"Invalid salary range: minimum must be less than or equal to maximum",
+				);
+			}
+		}
+
+		const location = Location.create(dto.country, dto.city, dto.zipCode);
+
+		const job = Job.create({
+			title: dto.title.trim(),
+			descriptionMarkdown: dto.descriptionMarkdown.trim(),
+			workplaceLocation: dto.workplaceLocation,
+			country: location.country,
+			city: location.city,
+			zipCode: location.zipCode,
+			employmentType: dto.employmentType,
+			salaryMin: dto.salaryMin,
+			salaryMax: dto.salaryMax,
+			status: dto.status ?? "OPEN",
+			departmentId: department.id,
+			tags:
+				dto.tags?.map((tag) => ({
+					id: crypto.randomUUID(),
+					name: tag.trim(),
+				})) ?? [],
+		});
+
+		const createdJob = await this.jobsRepository.create(job);
+
+		return createdJob;
 	}
 }

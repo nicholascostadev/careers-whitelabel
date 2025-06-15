@@ -1,30 +1,27 @@
+import { Department as DepartmentModel } from "@/models/index.js";
 import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository.js";
 import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository.js";
-import {
-	type Department,
-	EmploymentType,
-	JobStatus,
-	WorkplaceLocation,
-} from "@prisma/client";
+import { EmploymentType, JobStatus, WorkplaceLocation } from "@prisma/client";
 import { CreateJobService } from "./create-job.js";
 
 describe("Create Job Service", () => {
 	let jobsRepository: InMemoryJobsRepository;
 	let departmentsRepository: InMemoryDepartmentsRepository;
 	let createJobService: CreateJobService;
-	let department: Department;
+	let department: DepartmentModel;
 
 	beforeEach(async () => {
-		jobsRepository = new InMemoryJobsRepository();
 		departmentsRepository = new InMemoryDepartmentsRepository();
+		jobsRepository = new InMemoryJobsRepository(departmentsRepository);
 		createJobService = new CreateJobService(
 			jobsRepository,
 			departmentsRepository,
 		);
 
-		department = await departmentsRepository.create({
+		const createdDepartment = DepartmentModel.create({
 			name: "Software Engineering",
 		});
+		department = await departmentsRepository.create(createdDepartment);
 	});
 
 	describe("required fields", () => {
@@ -41,14 +38,16 @@ describe("Create Job Service", () => {
 
 			expect(job).toBeDefined();
 			expect(jobsRepository.items).toHaveLength(1);
-			expect(jobsRepository.items[0]).toEqual(
-				expect.objectContaining({
-					id: job.id,
-					title: "Software Engineer",
-					descriptionMarkdown: "Software Engineer description",
-					status: JobStatus.OPEN,
-				}),
-			);
+			if (jobsRepository.items[0]) {
+				expect(jobsRepository.items[0].job).toEqual(
+					expect.objectContaining({
+						id: job.id,
+						title: "Software Engineer",
+						descriptionMarkdown: "Software Engineer description",
+						status: JobStatus.OPEN,
+					}),
+				);
+			}
 		});
 	});
 

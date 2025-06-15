@@ -1,4 +1,5 @@
 import { OrganizationNotCreatedException } from "@/exceptions/organization-not-created.js";
+import type { UpdateOrganizationDTO } from "@/lib/dtos/update-organization.dto.js";
 import { InMemoryOrganizationRepository } from "@/repositories/in-memory/in-memory-organization-repository.js";
 import { beforeEach, describe, expect, it } from "vitest";
 import { UpdateOrganizationService } from "./update-organization.js";
@@ -15,9 +16,13 @@ describe("Update Organization Service", () => {
 	});
 
 	it("should be able to update organization name", async () => {
-		const updatedOrganization = await updateOrganizationService.execute({
+		const updateOrganizationDTO: UpdateOrganizationDTO = {
 			name: "Updated Organization",
-		});
+		};
+
+		const updatedOrganization = await updateOrganizationService.execute(
+			updateOrganizationDTO,
+		);
 
 		expect(updatedOrganization).toEqual(
 			expect.objectContaining({
@@ -27,9 +32,13 @@ describe("Update Organization Service", () => {
 	});
 
 	it("should be able to update organization description", async () => {
-		const updatedOrganization = await updateOrganizationService.execute({
+		const updateOrganizationDTO: UpdateOrganizationDTO = {
 			descriptionMarkdown: "Updated description",
-		});
+		};
+
+		const updatedOrganization = await updateOrganizationService.execute(
+			updateOrganizationDTO,
+		);
 
 		expect(updatedOrganization).toEqual(
 			expect.objectContaining({
@@ -39,9 +48,13 @@ describe("Update Organization Service", () => {
 	});
 
 	it("should be able to update organization image URL", async () => {
-		const updatedOrganization = await updateOrganizationService.execute({
+		const updateOrganizationDTO: UpdateOrganizationDTO = {
 			imageURL: "https://example.com/new-image.jpg",
-		});
+		};
+
+		const updatedOrganization = await updateOrganizationService.execute(
+			updateOrganizationDTO,
+		);
 
 		expect(updatedOrganization).toEqual(
 			expect.objectContaining({
@@ -51,9 +64,13 @@ describe("Update Organization Service", () => {
 	});
 
 	it("should be able to update organization banner URL", async () => {
-		const updatedOrganization = await updateOrganizationService.execute({
+		const updateOrganizationDTO: UpdateOrganizationDTO = {
 			bannerURL: "https://example.com/new-banner.jpg",
-		});
+		};
+
+		const updatedOrganization = await updateOrganizationService.execute(
+			updateOrganizationDTO,
+		);
 
 		expect(updatedOrganization).toEqual(
 			expect.objectContaining({
@@ -64,45 +81,55 @@ describe("Update Organization Service", () => {
 
 	it("should be able to remove image URL by setting it to null", async () => {
 		// First set an image URL
-		await updateOrganizationService.execute({
+		const setImageDTO: UpdateOrganizationDTO = {
 			imageURL: "https://example.com/image.jpg",
-		});
+		};
+		await updateOrganizationService.execute(setImageDTO);
 
-		const updatedOrganization = await updateOrganizationService.execute({
+		const removeImageDTO: UpdateOrganizationDTO = {
 			imageURL: null,
-		});
+		};
+		const updatedOrganization =
+			await updateOrganizationService.execute(removeImageDTO);
 
 		expect(updatedOrganization).toEqual(
 			expect.objectContaining({
-				imageURL: null,
+				imageURL: undefined,
 			}),
 		);
 	});
 
 	it("should be able to remove banner URL by setting it to null", async () => {
 		// First set a banner URL
-		await updateOrganizationService.execute({
+		const setBannerDTO: UpdateOrganizationDTO = {
 			bannerURL: "https://example.com/banner.jpg",
-		});
+		};
+		await updateOrganizationService.execute(setBannerDTO);
 
-		const updatedOrganization = await updateOrganizationService.execute({
+		const removeBannerDTO: UpdateOrganizationDTO = {
 			bannerURL: null,
-		});
+		};
+		const updatedOrganization =
+			await updateOrganizationService.execute(removeBannerDTO);
 
 		expect(updatedOrganization).toEqual(
 			expect.objectContaining({
-				bannerURL: null,
+				bannerURL: undefined,
 			}),
 		);
 	});
 
 	it("should be able to update multiple fields at once", async () => {
-		const updatedOrganization = await updateOrganizationService.execute({
+		const updateOrganizationDTO: UpdateOrganizationDTO = {
 			name: "Updated Organization",
 			descriptionMarkdown: "Updated description",
 			imageURL: "https://example.com/new-image.jpg",
 			bannerURL: "https://example.com/new-banner.jpg",
-		});
+		};
+
+		const updatedOrganization = await updateOrganizationService.execute(
+			updateOrganizationDTO,
+		);
 
 		expect(updatedOrganization).toEqual(
 			expect.objectContaining({
@@ -117,12 +144,16 @@ describe("Update Organization Service", () => {
 	it("should preserve unmodified fields", async () => {
 		const originalOrganization =
 			await organizationRepository.getOrganizationInfo();
-		const updatedOrganization = await updateOrganizationService.execute({
-			name: "Updated Organization",
-		});
 
-		expect(updatedOrganization).toEqual({
-			...originalOrganization,
+		const updateOrganizationDTO: UpdateOrganizationDTO = {
+			name: "Updated Organization",
+		};
+		const updatedOrganization = await updateOrganizationService.execute(
+			updateOrganizationDTO,
+		);
+
+		expect(updatedOrganization.toData()).toEqual({
+			...originalOrganization?.toData(),
 			name: "Updated Organization",
 		});
 	});
@@ -130,10 +161,12 @@ describe("Update Organization Service", () => {
 	it("should not be able to update organization if it does not exist", async () => {
 		organizationRepository.setOrganization(null);
 
+		const updateOrganizationDTO: UpdateOrganizationDTO = {
+			name: "Updated Organization",
+		};
+
 		await expect(
-			updateOrganizationService.execute({
-				name: "Updated Organization",
-			}),
+			updateOrganizationService.execute(updateOrganizationDTO),
 		).rejects.toThrow(OrganizationNotCreatedException);
 	});
 });

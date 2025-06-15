@@ -1,33 +1,38 @@
-import { db } from "@/lib/infra/database";
+import { db } from "@/lib/infra/database.js";
+import { Job } from "@/models/index.js";
 import type {
-	CreateJobRequest,
 	FindManyJobsRequest,
-	JobWithTagsAndDepartment,
 	JobsRepository,
 	ListJobsResponse,
-	UpdateJobRequest,
-} from "../jobs-repository";
+} from "../jobs-repository.js";
 
 export class PrismaJobsRepository implements JobsRepository {
-	async create(data: CreateJobRequest): Promise<JobWithTagsAndDepartment> {
-		const job = await db.job.create({
+	async create(job: Job): Promise<Job> {
+		// Convert domain model to Prisma format
+		const savedJob = await db.job.create({
 			data: {
-				title: data.title,
-				city: data.city,
-				country: data.country,
-				descriptionMarkdown: data.descriptionMarkdown,
-				employmentType: data.employmentType,
-				workplaceLocation: data.workplaceLocation,
-				departmentId: data.departmentId,
-				salaryMin: data.salaryMin,
-				salaryMax: data.salaryMax,
-				zipCode: data.zipCode,
+				id: job.id,
+				title: job.title,
+				city: job.city,
+				country: job.country,
+				descriptionMarkdown: job.descriptionMarkdown,
+				employmentType: job.employmentType,
+				workplaceLocation: job.workplaceLocation,
+				departmentId: job.departmentId,
+				salaryMin: job.salaryMin,
+				salaryMax: job.salaryMax,
+				zipCode: job.zipCode,
+				status: job.status,
 				tags: {
-					connectOrCreate: data.tags.map((tag) => ({
-						where: { name: tag },
-						create: { name: tag },
-					})),
+					connectOrCreate: job.tags.map(
+						(tag: { id: string; name: string }) => ({
+							where: { name: tag.name },
+							create: { name: tag.name },
+						}),
+					),
 				},
+				createdAt: job.createdAt,
+				updatedAt: job.updatedAt,
 			},
 			include: {
 				tags: true,
@@ -35,11 +40,31 @@ export class PrismaJobsRepository implements JobsRepository {
 			},
 		});
 
-		return job;
+		// Convert Prisma result back to domain model
+		return Job.fromData({
+			id: savedJob.id,
+			title: savedJob.title,
+			descriptionMarkdown: savedJob.descriptionMarkdown,
+			workplaceLocation: savedJob.workplaceLocation,
+			country: savedJob.country,
+			city: savedJob.city,
+			zipCode: savedJob.zipCode ?? undefined,
+			employmentType: savedJob.employmentType,
+			salaryMin: savedJob.salaryMin ?? undefined,
+			salaryMax: savedJob.salaryMax ?? undefined,
+			status: savedJob.status,
+			departmentId: savedJob.departmentId,
+			tags: savedJob.tags.map((tag) => ({
+				id: tag.id,
+				name: tag.name,
+			})),
+			createdAt: savedJob.createdAt,
+			updatedAt: savedJob.updatedAt,
+		});
 	}
 
-	async findById(id: string): Promise<JobWithTagsAndDepartment | null> {
-		const job = await db.job.findUnique({
+	async findById(id: string): Promise<Job | null> {
+		const jobData = await db.job.findUnique({
 			where: {
 				id,
 			},
@@ -49,7 +74,31 @@ export class PrismaJobsRepository implements JobsRepository {
 			},
 		});
 
-		return job ?? null;
+		if (!jobData) {
+			return null;
+		}
+
+		// Convert Prisma result to domain model
+		return Job.fromData({
+			id: jobData.id,
+			title: jobData.title,
+			descriptionMarkdown: jobData.descriptionMarkdown,
+			workplaceLocation: jobData.workplaceLocation,
+			country: jobData.country,
+			city: jobData.city,
+			zipCode: jobData.zipCode ?? undefined,
+			employmentType: jobData.employmentType,
+			salaryMin: jobData.salaryMin ?? undefined,
+			salaryMax: jobData.salaryMax ?? undefined,
+			status: jobData.status,
+			departmentId: jobData.departmentId,
+			tags: jobData.tags.map((tag) => ({
+				id: tag.id,
+				name: tag.name,
+			})),
+			createdAt: jobData.createdAt,
+			updatedAt: jobData.updatedAt,
+		});
 	}
 
 	async findMany(
@@ -58,7 +107,7 @@ export class PrismaJobsRepository implements JobsRepository {
 	): Promise<ListJobsResponse> {
 		console.log(data);
 
-		const [jobs, totalCount] = await Promise.all([
+		const [jobsData, totalCount] = await Promise.all([
 			db.job.findMany({
 				where: {
 					department: {
@@ -123,6 +172,30 @@ export class PrismaJobsRepository implements JobsRepository {
 			}),
 		]);
 
+		// Convert Prisma results to domain models
+		const jobs = jobsData.map((jobData) =>
+			Job.fromData({
+				id: jobData.id,
+				title: jobData.title,
+				descriptionMarkdown: jobData.descriptionMarkdown,
+				workplaceLocation: jobData.workplaceLocation,
+				country: jobData.country,
+				city: jobData.city,
+				zipCode: jobData.zipCode ?? undefined,
+				employmentType: jobData.employmentType,
+				salaryMin: jobData.salaryMin ?? undefined,
+				salaryMax: jobData.salaryMax ?? undefined,
+				status: jobData.status,
+				departmentId: jobData.departmentId,
+				tags: jobData.tags.map((tag) => ({
+					id: tag.id,
+					name: tag.name,
+				})),
+				createdAt: jobData.createdAt,
+				updatedAt: jobData.updatedAt,
+			}),
+		);
+
 		return {
 			jobs,
 			totalCount,
@@ -130,29 +203,29 @@ export class PrismaJobsRepository implements JobsRepository {
 		};
 	}
 
-	async update(
-		id: string,
-		data: UpdateJobRequest,
-	): Promise<JobWithTagsAndDepartment> {
-		const job = await db.job.update({
+	async update(job: Job): Promise<Job> {
+		const updatedJob = await db.job.update({
 			where: {
-				id,
+				id: job.id,
 			},
 			data: {
-				title: data.title,
-				descriptionMarkdown: data.descriptionMarkdown,
-				workplaceLocation: data.workplaceLocation,
-				employmentType: data.employmentType,
-				country: data.country,
-				city: data.city,
-				zipCode: data.zipCode,
-				salaryMin: data.salaryMin,
-				salaryMax: data.salaryMax,
-				departmentId: data.departmentId,
+				title: job.title,
+				descriptionMarkdown: job.descriptionMarkdown,
+				workplaceLocation: job.workplaceLocation,
+				employmentType: job.employmentType,
+				country: job.country,
+				city: job.city,
+				zipCode: job.zipCode,
+				salaryMin: job.salaryMin,
+				salaryMax: job.salaryMax,
+				status: job.status,
+				departmentId: job.departmentId,
+				updatedAt: job.updatedAt,
 				tags: {
-					connectOrCreate: data.tags?.map((tag) => ({
-						where: { name: tag },
-						create: { name: tag },
+					set: [],
+					connectOrCreate: job.tags.map((tag) => ({
+						where: { name: tag.name },
+						create: { name: tag.name },
 					})),
 				},
 			},
@@ -162,6 +235,26 @@ export class PrismaJobsRepository implements JobsRepository {
 			},
 		});
 
-		return job;
+		// Convert Prisma result to domain model
+		return Job.fromData({
+			id: updatedJob.id,
+			title: updatedJob.title,
+			descriptionMarkdown: updatedJob.descriptionMarkdown,
+			workplaceLocation: updatedJob.workplaceLocation,
+			country: updatedJob.country,
+			city: updatedJob.city,
+			zipCode: updatedJob.zipCode ?? undefined,
+			employmentType: updatedJob.employmentType,
+			salaryMin: updatedJob.salaryMin ?? undefined,
+			salaryMax: updatedJob.salaryMax ?? undefined,
+			status: updatedJob.status,
+			departmentId: updatedJob.departmentId,
+			tags: updatedJob.tags.map((tag) => ({
+				id: tag.id,
+				name: tag.name,
+			})),
+			createdAt: updatedJob.createdAt,
+			updatedAt: updatedJob.updatedAt,
+		});
 	}
 }

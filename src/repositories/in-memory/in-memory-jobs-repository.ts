@@ -1,21 +1,20 @@
-import type { Department, Job, JobTag } from "@prisma/client";
-import { randomUUID } from "node:crypto";
+import type { Department, Job } from "@/models/index.js";
+import type { JobTag } from "@prisma/client";
+import type { DepartmentsRepository } from "../departments-repository.js";
 import type {
-	CreateJobRequest,
 	FindManyJobsRequest,
 	JobsRepository,
 	ListJobsResponse,
-	UpdateJobRequest,
 } from "../jobs-repository.js";
 
-type DepartmentsRepository = {
-	findById: (id: string) => Promise<Department | null>;
-	findByName: (name: string) => Promise<Department | null>;
-	create: (data: { id?: string; name: string }) => Promise<Department>;
+type JobStorageItem = {
+	job: Job;
+	tags: JobTag[];
+	department: Department;
 };
 
 export class InMemoryJobsRepository implements JobsRepository {
-	items: (Job & { tags: JobTag[]; department: Department })[] = [];
+	items: JobStorageItem[] = [];
 	jobTags: string[] = [];
 	departmentsRepository?: DepartmentsRepository;
 
@@ -23,78 +22,61 @@ export class InMemoryJobsRepository implements JobsRepository {
 		this.departmentsRepository = departmentsRepository;
 	}
 
-	async create(data: CreateJobRequest) {
-		const notFoundJobTags = data.tags?.filter(
-			(tag) => !this.jobTags.some((t) => t === tag),
-		);
-
-		if (notFoundJobTags?.length) {
-			this.jobTags.push(...notFoundJobTags);
-		}
-
-		const tags = data.tags.map((tag) => ({
-			id: randomUUID(),
-			name: tag,
-			jobId: null,
-		}));
-
-		// Handle department lookup or creation
+	async create(job: Job): Promise<Job> {
 		let department: Department;
 
 		if (this.departmentsRepository) {
-			// Try to find existing department by name
-			let existingDepartment = await this.departmentsRepository.findByName(
-				data.departmentName,
+			const existingDepartment = await this.departmentsRepository.findById(
+				job.departmentId,
 			);
-			if (!existingDepartment) {
-				// Create new department if not found
-				existingDepartment = await this.departmentsRepository.create({
-					name: data.departmentName,
-				});
+			if (existingDepartment) {
+				department = existingDepartment;
+			} else {
+				throw new Error("Department not found");
 			}
-			department = existingDepartment;
 		} else {
-			// Fallback for tests that don't provide departmentsRepository
-			department = {
-				id: randomUUID(),
-				name: data.departmentName,
-			};
+			throw new Error(
+				"InMemoryJobsRepository requires a departmentsRepository instance",
+			);
 		}
 
-		const job = {
-			...data,
-			id: data.id ?? randomUUID(),
-			createdAt: data.createdAt ?? new Date(),
-			zipCode: data.zipCode ?? null,
-			salaryMin: data.salaryMin ?? null,
-			salaryMax: data.salaryMax ?? null,
-			tags,
-			updatedAt: new Date(),
-			department,
-			departmentId: department.id,
-		};
+		// Convert domain model tags to storage format
+		const tags = job.tags.map((tag) => ({
+			id: tag.id,
+			name: tag.name,
+			jobId: job.id,
+		}));
 
-		this.items.push(job);
+		// Store the job with metadata separately
+		this.items.push({
+			job,
+			tags,
+			department,
+		});
 
 		return job;
 	}
 
-	async findById(id: string) {
-		const job = this.items.find((job) => job.id === id);
+	async findById(id: string): Promise<Job | null> {
+		const storageItem = this.items.find((item) => item.job.id === id);
 
-		if (!job) {
+		if (!storageItem) {
 			return null;
 		}
 
-		return job;
+		// Return the domain model directly since it contains all the data
+		return storageItem.job;
 	}
 
 	async findMany(
 		data: FindManyJobsRequest,
 		page: number,
+		itemsPerPage = 10,
 	): Promise<ListJobsResponse> {
-		const jobs = this.items.filter((job) => {
-			if (data.departmentName && job.department.name !== data.departmentName) {
+		const filteredJobs = this.items.filter((item) => {
+			const job = item.job;
+
+			if (data.departmentName && item.department.name !== data.departmentName) {
 				return false;
 			}
 
@@ -136,7 +118,7 @@ export class InMemoryJobsRepository implements JobsRepository {
 			}
 
 			if (data.tags && data.tags.length > 0) {
-				if (!job.tags.some((tag) => data.tags.includes(tag.name))) {
+				if (!item.tags.some((tag) => data.tags.includes(tag.name))) {
 					return false;
 				}
 			}
@@ -144,84 +126,60 @@ export class InMemoryJobsRepository implements JobsRepository {
 			return true;
 		});
 
-		const startIndex = (page - 1) * 10;
-		const endIndex = startIndex + 10;
+		const startIndex = (page - 1) * itemsPerPage;
+		const endIndex = startIndex + itemsPerPage;
+
+		// Return the domain models directly
+		const jobs = filteredJobs
+			.slice(startIndex, endIndex)
+			.map((item) => item.job);
 
 		return {
-			jobs: jobs.slice(startIndex, endIndex),
-			totalCount: jobs.length,
-			totalPages: Math.ceil(jobs.length / 10),
+			jobs,
+			totalCount: filteredJobs.length,
+			totalPages: Math.ceil(filteredJobs.length / itemsPerPage),
 		};
 	}
 
-	async update(id: string, data: UpdateJobRequest) {
-		const jobIndex = this.items.findIndex((job) => job.id === id);
+	async update(job: Job): Promise<Job> {
+		const itemIndex = this.items.findIndex((item) => item.job.id === job.id);
 
-		if (jobIndex === -1) {
-			throw new Error();
+		if (itemIndex === -1) {
+			throw new Error("Job not found");
 		}
 
-		const currentJob = this.items[jobIndex];
+		const currentItem = this.items[itemIndex];
 
-		if (!currentJob) {
-			throw new Error();
+		if (!currentItem) {
+			throw new Error("Job not found");
 		}
 
-		const updatedJobTags =
-			data.tags?.map((tagName) => ({
-				id: crypto.randomUUID(),
-				name: tagName,
-				jobId: id,
-			})) ?? currentJob.tags;
+		const updatedJobTags = job.tags.map((tag) => ({
+			id: tag.id,
+			name: tag.name,
+			jobId: job.id,
+		}));
 
-		// Handle department update
-		let department = currentJob.department;
+		let department = currentItem.department;
 
-		if (
-			data.departmentName &&
-			data.departmentName !== currentJob.department.name
-		) {
+		if (job.departmentId !== currentItem.department.id) {
 			if (this.departmentsRepository) {
-				// Try to find existing department by name
-				let existingDepartment = await this.departmentsRepository.findByName(
-					data.departmentName,
+				const existingDepartment = await this.departmentsRepository.findById(
+					job.departmentId,
 				);
-				if (!existingDepartment) {
-					// Create new department if not found
-					existingDepartment = await this.departmentsRepository.create({
-						name: data.departmentName,
-					});
+				if (existingDepartment) {
+					department = existingDepartment;
 				}
-				department = existingDepartment;
-			} else {
-				// Fallback for tests that don't provide departmentsRepository
-				department = {
-					id: randomUUID(),
-					name: data.departmentName,
-				};
 			}
 		}
 
-		this.items[jobIndex] = {
-			...currentJob,
-			title: data.title ?? currentJob.title,
-			descriptionMarkdown:
-				data.descriptionMarkdown ?? currentJob.descriptionMarkdown,
-			salaryMin:
-				data.salaryMin === undefined ? currentJob.salaryMin : data.salaryMin,
-			salaryMax:
-				data.salaryMax === undefined ? currentJob.salaryMax : data.salaryMax,
-			workplaceLocation: data.workplaceLocation ?? currentJob.workplaceLocation,
-			employmentType: data.employmentType ?? currentJob.employmentType,
-			country: data.country ?? currentJob.country,
-			city: data.city ?? currentJob.city,
-			zipCode: data.zipCode === undefined ? currentJob.zipCode : data.zipCode,
+		// Update the storage item with new data
+		this.items[itemIndex] = {
+			job,
 			tags: updatedJobTags,
-			status: data.status ?? currentJob.status,
 			department,
-			departmentId: department.id,
 		};
 
-		return this.items[jobIndex];
+		return job;
 	}
 }

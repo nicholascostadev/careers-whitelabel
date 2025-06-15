@@ -1,32 +1,14 @@
-import {
-	type JobApplication,
-	JobApplicationStatus,
-	type Prisma,
-} from "@prisma/client";
-import { randomUUID } from "node:crypto";
-import type { JobApplicationsRepository } from "../job-application-repository";
+import type { JobApplication } from "@/models/index.js";
+import type { JobApplicationsRepository } from "../job-application-repository.js";
 
 export class InMemoryJobApplicationsRepository
 	implements JobApplicationsRepository
 {
 	items: JobApplication[] = [];
 
-	async create({
-		id,
-		createdAt,
-		...data
-	}: Prisma.JobApplicationUncheckedCreateInput) {
-		const jobApplication = {
-			id: randomUUID(),
-			createdAt: new Date(),
-			status: data.status ?? JobApplicationStatus.PENDING,
-			phone: data.phone ?? null,
-			resumeURL: data.resumeURL ?? null,
-			...data,
-		};
-
+	async create(jobApplication: JobApplication): Promise<JobApplication> {
+		// Domain model is already validated, just store it
 		this.items.push(jobApplication);
-
 		return jobApplication;
 	}
 
@@ -38,10 +20,6 @@ export class InMemoryJobApplicationsRepository
 			(item) => item.email === applicantEmail && item.jobId === jobId,
 		);
 
-		if (!jobApplication) {
-			return null;
-		}
-
-		return jobApplication;
+		return jobApplication ?? null;
 	}
 }

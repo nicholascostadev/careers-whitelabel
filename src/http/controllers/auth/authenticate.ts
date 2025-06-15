@@ -1,3 +1,4 @@
+import type { AuthenticateDTO } from "@/lib/dtos/authenticate.dto.js";
 import { generateTokens } from "@/lib/generateTokens.js";
 import { makeAuthenticateOrganizationService } from "@/services/factories/make-authenticate-organization-service.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
@@ -36,11 +37,16 @@ export async function authenticateOrganizationController(
 	request: AuthenticateRequest,
 	reply: AuthenticateReply,
 ) {
+	const { password } = request.body;
+
+	const authenticateDTO: AuthenticateDTO = {
+		password,
+	};
+
 	const authenticateOrganizationService = makeAuthenticateOrganizationService();
 
-	const { organization } = await authenticateOrganizationService.execute({
-		password: request.body.password,
-	});
+	const { organization } =
+		await authenticateOrganizationService.execute(authenticateDTO);
 
 	const { accessToken, refreshToken } = generateTokens({
 		organizationId: organization.id,

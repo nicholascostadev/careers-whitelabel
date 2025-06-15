@@ -1,0 +1,47 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Architecture Guide
+
+This project follows a Domain-Driven Design (DDD) inspired architecture, separating concerns into distinct layers: Domain, Application (Services), and Infrastructure (Repositories, HTTP).
+
+## Core Concepts
+
+### 1. Domain Models (`src/models/`)
+- **Purpose**: Represent core business entities and their logic (e.g., `Job`, `Department`).
+- **Characteristics**:
+    - They are classes that encapsulate data and behavior.
+    - They use Zod schemas (`JobSchema`) for validation, ensuring that a model instance is always valid.
+    - They have static factory methods like `create()` to construct new instances and `fromData()` to reconstitute from existing data.
+    - Business logic specific to an entity is placed within its model class (e.g., `job.close()`, `job.addTag()`).
+
+### 2. Repositories (`src/repositories/`)
+- **Purpose**: Mediate between the domain and data mapping layers, providing a collection-like interface for accessing domain objects.
+- **Characteristics**:
+    - An interface (`JobsRepository`) defines the contract for data operations.
+    - Implementations are provided for different data sources (e.g., `PrismaJobsRepository` for the database, `InMemoryJobsRepository` for testing).
+    - They always work with and return domain models (`Job`), not raw database objects.
+
+### 3. Services (`src/services/`)
+- **Purpose**: Orchestrate the application's business logic. They are the primary clients of the repositories.
+- **Characteristics**:
+    - They contain application-specific use cases (e.g., `CreateJobService`, `ApplyToJobService`).
+    - They receive Data Transfer Objects (DTOs) as input from the controllers.
+    - They use repositories to fetch domain models, call domain model methods to perform actions, and use repositories again to persist the results.
+
+### 4. Data Transfer Objects (DTOs) (`src/lib/dtos/`)
+- **Purpose**: Carry data between processes. In this project, they are used to transfer data from the HTTP layer to the service layer.
+- **Characteristics**:
+    - They are simple `type` definitions with no behavior.
+    - They define the shape of the data expected by the services for a specific operation.
+
+## Data Flow Example: Creating a Job
+1.  **HTTP Controller**: Receives a request and passes the parsed body (a `CreateJobDto`) to the `CreateJobService`.
+2.  **Service**: `CreateJobService.execute()` is called with the DTO.
+    - It uses `DepartmentsRepository` to find the specified department.
+    - It calls `Job.create()` to create a new `Job` domain model, which validates the input data.
+    - It calls `JobsRepository.create()` to persist the new `Job` model.
+3.  **Repository**: The `PrismaJobsRepository` implementation takes the `Job` model, converts it to a Prisma data object, and saves it to the database.
+4.  **Response**: The newly created `Job` model is returned up the call stack to the controller, which sends it as an HTTP response.

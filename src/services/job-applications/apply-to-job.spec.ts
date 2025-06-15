@@ -1,10 +1,11 @@
 import { JobApplicationAlreadySubmittedException } from "@/exceptions/job-application-already-submitted-exception.js";
 import { JobClosedException } from "@/exceptions/job-closed-exception.js";
 import { JobNotFoundException } from "@/exceptions/job-not-found-exception.js";
+import { Department, Job } from "@/models/index.js";
 import { InMemoryDepartmentsRepository } from "@/repositories/in-memory/in-memory-departments.repository.js";
 import { InMemoryJobApplicationsRepository } from "@/repositories/in-memory/in-memory-job-applications-repository.js";
 import { InMemoryJobsRepository } from "@/repositories/in-memory/in-memory-jobs-repository.js";
-import { EmploymentType, JobStatus, WorkplaceLocation } from "@prisma/client";
+import { randomUUID } from "node:crypto";
 import { ApplyToJobService } from "./apply-to-job.js";
 
 describe("Apply to Job Service", () => {
@@ -22,9 +23,9 @@ describe("Apply to Job Service", () => {
 	};
 
 	beforeEach(() => {
-		jobsRepository = new InMemoryJobsRepository();
-		jobApplicationsRepository = new InMemoryJobApplicationsRepository();
 		departmentsRepository = new InMemoryDepartmentsRepository();
+		jobsRepository = new InMemoryJobsRepository(departmentsRepository);
+		jobApplicationsRepository = new InMemoryJobApplicationsRepository();
 		applyToJobService = new ApplyToJobService(
 			jobsRepository,
 			jobApplicationsRepository,
@@ -41,22 +42,26 @@ describe("Apply to Job Service", () => {
 	});
 
 	it("should not be able to apply to a job with the same email", async () => {
-		const department = await departmentsRepository.create({
-			name: "Software Engineering",
-		});
+		const department = await departmentsRepository.create(
+			Department.create({
+				name: "Software Engineering",
+			}),
+		);
 
-		const job = await jobsRepository.create({
-			title: "Software Engineer",
-			descriptionMarkdown: "Software Engineer",
-			departmentId: department.id,
-			workplaceLocation: WorkplaceLocation.REMOTE,
-			employmentType: EmploymentType.FULL_TIME,
-			status: JobStatus.OPEN,
-			country: "Brazil",
-			city: "São Paulo",
-			zipCode: "01001-000",
-			tags: ["typescript", "node"],
-		});
+		const job = await jobsRepository.create(
+			Job.create({
+				title: "Software Engineer",
+				descriptionMarkdown: "Software Engineer",
+				departmentId: department.id,
+				workplaceLocation: "REMOTE",
+				employmentType: "FULL_TIME",
+				status: "OPEN",
+				country: "Brazil",
+				city: "São Paulo",
+				zipCode: "01001-000",
+				tags: [{ id: randomUUID(), name: "typescript" }],
+			}),
+		);
 
 		await applyToJobService.execute({
 			jobId: job.id,
@@ -72,22 +77,26 @@ describe("Apply to Job Service", () => {
 	});
 
 	it("should not be able to apply to a closed job", async () => {
-		const department = await departmentsRepository.create({
-			name: "Software Engineering",
-		});
+		const department = await departmentsRepository.create(
+			Department.create({
+				name: "Software Engineering",
+			}),
+		);
 
-		const job = await jobsRepository.create({
-			title: "Software Engineer",
-			descriptionMarkdown: "Software Engineer",
-			departmentId: department.id,
-			workplaceLocation: WorkplaceLocation.REMOTE,
-			employmentType: EmploymentType.FULL_TIME,
-			status: JobStatus.CLOSED,
-			country: "Brazil",
-			city: "São Paulo",
-			zipCode: "01001-000",
-			tags: ["typescript", "node"],
-		});
+		const job = await jobsRepository.create(
+			Job.create({
+				title: "Software Engineer",
+				descriptionMarkdown: "Software Engineer",
+				departmentId: department.id,
+				workplaceLocation: "REMOTE",
+				employmentType: "FULL_TIME",
+				status: "CLOSED",
+				country: "Brazil",
+				city: "São Paulo",
+				zipCode: "01001-000",
+				tags: [{ id: randomUUID(), name: "typescript" }],
+			}),
+		);
 
 		await expect(
 			applyToJobService.execute({
@@ -98,22 +107,26 @@ describe("Apply to Job Service", () => {
 	});
 
 	it("should be able to apply to a job", async () => {
-		const department = await departmentsRepository.create({
-			name: "Software Engineering",
-		});
+		const department = await departmentsRepository.create(
+			Department.create({
+				name: "Software Engineering",
+			}),
+		);
 
-		const job = await jobsRepository.create({
-			title: "Software Engineer",
-			descriptionMarkdown: "Software Engineer",
-			departmentId: department.id,
-			workplaceLocation: WorkplaceLocation.REMOTE,
-			employmentType: EmploymentType.FULL_TIME,
-			status: JobStatus.OPEN,
-			country: "Brazil",
-			city: "São Paulo",
-			zipCode: "01001-000",
-			tags: ["typescript", "node"],
-		});
+		const job = await jobsRepository.create(
+			Job.create({
+				title: "Software Engineer",
+				descriptionMarkdown: "Software Engineer",
+				departmentId: department.id,
+				workplaceLocation: "REMOTE",
+				employmentType: "FULL_TIME",
+				status: "OPEN",
+				country: "Brazil",
+				city: "São Paulo",
+				zipCode: "01001-000",
+				tags: [{ id: randomUUID(), name: "typescript" }],
+			}),
+		);
 
 		const jobApplication = await applyToJobService.execute({
 			jobId: job.id,

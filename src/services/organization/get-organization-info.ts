@@ -1,3 +1,4 @@
+import { OrganizationNotCreatedException } from "@/exceptions/organization-not-created.js";
 import type { OrganizationRepository } from "@/repositories/organization-repository.js";
 
 export class GetOrganizationInfoService {
@@ -6,6 +7,10 @@ export class GetOrganizationInfoService {
 	async execute() {
 		const organization =
 			await this.organizationRepository.getOrganizationInfo();
+
+		if (!organization) {
+			throw new OrganizationNotCreatedException();
+		}
 
 		return {
 			organization,

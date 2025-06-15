@@ -1,16 +1,14 @@
 import { InvalidPasswordException } from "@/exceptions/invalid-password-exception.js";
 import { OrganizationNotCreatedException } from "@/exceptions/organization-not-created.js";
+import type { AuthenticateDTO } from "@/lib/dtos/authenticate.dto.js";
+import type { Organization } from "@/models/index.js";
 import type { OrganizationRepository } from "@/repositories/organization-repository.js";
 import { compare } from "bcryptjs";
-
-interface AuthenticateOrganizationRequest {
-	password: string;
-}
 
 export class AuthenticateOrganizationService {
 	constructor(private organizationRepository: OrganizationRepository) {}
 
-	async execute(data: AuthenticateOrganizationRequest) {
+	async execute(dto: AuthenticateDTO): Promise<{ organization: Organization }> {
 		const organization =
 			await this.organizationRepository.getOrganizationInfo();
 
@@ -19,7 +17,7 @@ export class AuthenticateOrganizationService {
 		}
 
 		const doesPasswordMatch = await compare(
-			data.password,
+			dto.password,
 			organization.passwordHash,
 		);
 

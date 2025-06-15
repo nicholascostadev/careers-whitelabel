@@ -1,23 +1,14 @@
 import { ExceptionSchema } from "@/exceptions/exceptionSchema.js";
+import {
+	type CreateJobDto,
+	CreateJobDtoSchema,
+} from "@/lib/dtos/create-job.dto.js";
 import { JobDtoSchema } from "@/lib/dtos/job.js";
 import { makeCreateJobService } from "@/services/factories/make-create-job-service.js";
-import { EmploymentType, JobStatus, WorkplaceLocation } from "@prisma/client";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import z from "zod/v4";
 
-export const CreateJobBodySchema = z.object({
-	title: z.string().min(1),
-	descriptionMarkdown: z.string().min(1),
-	departmentId: z.string().min(1),
-	country: z.string().min(1),
-	city: z.string().min(1),
-	workplaceLocation: z.enum(WorkplaceLocation),
-	employmentType: z.enum(EmploymentType),
-	salaryMin: z.number().optional(),
-	salaryMax: z.number().optional(),
-	status: z.enum(JobStatus).optional(),
-	tags: z.array(z.string()).optional(),
-});
+export const CreateJobBodySchema = CreateJobDtoSchema;
 
 type CreateJobBody = z.infer<typeof CreateJobBodySchema>;
 
@@ -48,37 +39,12 @@ export async function createJobController(
 	request: CreateJobRequest,
 	reply: CreateJobReply,
 ) {
-	const {
-		title,
-		descriptionMarkdown,
-		departmentId,
-		country,
-		city,
-		workplaceLocation,
-		employmentType,
-		salaryMin,
-		salaryMax,
-		status,
-		tags,
-	} = request.body;
+	const dto: CreateJobDto = request.body;
 
 	const createJobService = makeCreateJobService();
-
-	const job = await createJobService.execute({
-		title,
-		descriptionMarkdown,
-		departmentId,
-		country,
-		city,
-		workplaceLocation,
-		employmentType,
-		salaryMin,
-		salaryMax,
-		status,
-		tags,
-	});
+	const createdJob = await createJobService.execute(dto);
 
 	return reply.status(201).send({
-		job,
+		job: createdJob,
 	});
 }
