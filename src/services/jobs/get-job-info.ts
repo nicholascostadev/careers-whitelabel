@@ -5,14 +5,12 @@ export class GetJobInfoService {
 	constructor(private jobsRepository: JobsRepository) {}
 
 	async execute(id: string) {
-		const job = await this.jobsRepository.findById(id);
+		const jobWithDepartment = await this.jobsRepository.findById(id);
 
-		if (!job) {
+		if (!jobWithDepartment) {
 			throw new JobNotFoundException();
 		}
 
-		return {
-			job,
-		};
+		return jobWithDepartment;
 	}
 }

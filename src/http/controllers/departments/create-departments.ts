@@ -1,4 +1,5 @@
 import type { CreateDepartmentDTO } from "@/lib/dtos/create-department.dto.js";
+import { DepartmentDtoSchema } from "@/lib/dtos/department.js";
 import { makeCreateDepartmentService } from "@/services/factories/make-create-department-service.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import z from "zod/v4";
@@ -10,10 +11,7 @@ type CreateDepartmentBody = z.infer<typeof CreateDepartmentBodySchema>;
 
 export const CreateDepartmentResponseSchema = {
 	201: z.object({
-		department: z.object({
-			id: z.string(),
-			name: z.string(),
-		}),
+		department: DepartmentDtoSchema,
 	}),
 	401: z.object({
 		message: z.string(),

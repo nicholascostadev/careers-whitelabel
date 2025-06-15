@@ -1,3 +1,4 @@
+import { DepartmentDtoSchema } from "@/lib/dtos/department.js";
 import { JobDtoSchema } from "@/lib/dtos/job.js";
 import type { ListJobsDTO } from "@/lib/dtos/list-jobs.dto.js";
 import { makeListJobsService } from "@/services/factories/make-list-jobs-service.js";
@@ -22,7 +23,11 @@ type ListJobsQuery = z.infer<typeof ListJobsQuerySchema>;
 
 export const ListJobsResponseSchema = {
 	200: z.object({
-		jobs: z.array(JobDtoSchema),
+		jobs: z.array(
+			JobDtoSchema.extend({
+				department: DepartmentDtoSchema,
+			}),
+		),
 		page: z.number(),
 		totalCount: z.number(),
 		totalPages: z.number(),
@@ -79,8 +84,15 @@ export async function listJobsController(
 	const { jobs, totalCount, totalPages } =
 		await listJobsService.execute(listJobsDTO);
 
+	const jobsWithDepartments = jobs.map(({ job, department }) => {
+		return {
+			...job.toData(),
+			department: department.toData(),
+		};
+	});
+
 	return reply.status(200).send({
-		jobs,
+		jobs: jobsWithDepartments,
 		page,
 		totalCount,
 		totalPages,

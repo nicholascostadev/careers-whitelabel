@@ -1,4 +1,9 @@
-import type { EmploymentType, Job, WorkplaceLocation } from "@/models/index.js";
+import type {
+	Department,
+	EmploymentType,
+	Job,
+	WorkplaceLocation,
+} from "@/models/index.js";
 
 export interface FindManyJobsRequest {
 	departmentName?: string;
@@ -11,6 +16,11 @@ export interface FindManyJobsRequest {
 	city?: string;
 	tags: string[];
 }
+
+export type JobWithDepartment = {
+	job: Job;
+	department: Department;
+};
 
 export interface CreateJobRequest {
 	id?: string;
@@ -30,14 +40,14 @@ export interface CreateJobRequest {
 }
 
 export interface ListJobsResponse {
-	jobs: Job[];
+	jobs: JobWithDepartment[];
 	totalPages: number;
 	totalCount: number;
 }
 
 export interface JobsRepository {
 	create(job: Job): Promise<Job>;
-	findById(id: string): Promise<Job | null>;
+	findById(id: string): Promise<JobWithDepartment | null>;
 	findMany(
 		data: FindManyJobsRequest,
 		page: number,

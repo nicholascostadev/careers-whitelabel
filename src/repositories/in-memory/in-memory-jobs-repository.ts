@@ -3,6 +3,7 @@ import type { JobTag } from "@prisma/client";
 import type { DepartmentsRepository } from "../departments-repository.js";
 import type {
 	FindManyJobsRequest,
+	JobWithDepartment,
 	JobsRepository,
 	ListJobsResponse,
 } from "../jobs-repository.js";
@@ -57,7 +58,7 @@ export class InMemoryJobsRepository implements JobsRepository {
 		return job;
 	}
 
-	async findById(id: string): Promise<Job | null> {
+	async findById(id: string): Promise<JobWithDepartment | null> {
 		const storageItem = this.items.find((item) => item.job.id === id);
 
 		if (!storageItem) {
@@ -65,7 +66,10 @@ export class InMemoryJobsRepository implements JobsRepository {
 		}
 
 		// Return the domain model directly since it contains all the data
-		return storageItem.job;
+		return {
+			job: storageItem.job,
+			department: storageItem.department,
+		};
 	}
 
 	async findMany(
@@ -132,7 +136,7 @@ export class InMemoryJobsRepository implements JobsRepository {
 		// Return the domain models directly
 		const jobs = filteredJobs
 			.slice(startIndex, endIndex)
-			.map((item) => item.job);
+			.map((item) => ({ job: item.job, department: item.department }));
 
 		return {
 			jobs,

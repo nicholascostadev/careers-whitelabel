@@ -1,4 +1,5 @@
 import { ExceptionSchema } from "@/exceptions/exceptionSchema.js";
+import { DepartmentDtoSchema } from "@/lib/dtos/department.js";
 import { JobDtoSchema } from "@/lib/dtos/job.js";
 import { makeGetJobInfoService } from "@/services/factories/make-get-job-info-service.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
@@ -12,7 +13,9 @@ type GetJobInfoParams = z.infer<typeof GetJobInfoParamsSchema>;
 
 export const GetJobInfoResponseSchema = {
 	200: z.object({
-		job: JobDtoSchema,
+		job: JobDtoSchema.extend({
+			department: DepartmentDtoSchema,
+		}),
 	}),
 	404: ExceptionSchema,
 };
@@ -39,9 +42,14 @@ export async function getJobInfoController(
 
 	const getJobInfoService = makeGetJobInfoService();
 
-	const { job } = await getJobInfoService.execute(id);
+	const { job, department } = await getJobInfoService.execute(id);
+
+	const response = {
+		...job.toData(),
+		department: department.toData(),
+	};
 
 	return reply.status(200).send({
-		job,
+		job: response,
 	});
 }

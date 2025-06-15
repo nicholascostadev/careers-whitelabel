@@ -54,7 +54,8 @@ describe("List Jobs Service", () => {
 			expect(jobs).toHaveLength(1);
 			expect(totalCount).toBe(1);
 			if (jobs[0]) {
-				expect(jobs[0].title).toBe("Software Engineer");
+				expect(jobs[0].job.title).toBe("Software Engineer");
+				expect(jobs[0].department.name).toBe("Engineering");
 			}
 			// can't test department name this way anymore, would need a join in the repo
 		});
@@ -71,7 +72,7 @@ describe("List Jobs Service", () => {
 			expect(jobs).toHaveLength(1);
 			expect(totalCount).toBe(1);
 			if (jobs[0]) {
-				expect(jobs[0].title).toBe("Software Engineer");
+				expect(jobs[0].job.title).toBe("Software Engineer");
 			}
 		});
 
@@ -92,7 +93,7 @@ describe("List Jobs Service", () => {
 			expect(jobs).toHaveLength(1);
 			expect(totalCount).toBe(1);
 			if (jobs[0]) {
-				expect(jobs[0].departmentId).toBe(defaultDepartment.id);
+				expect(jobs[0].job.departmentId).toBe(defaultDepartment.id);
 			}
 		});
 	});
@@ -110,8 +111,8 @@ describe("List Jobs Service", () => {
 
 			expect(jobs).toHaveLength(1);
 			if (jobs[0]) {
-				expect(jobs[0].salaryMin).toBe(90000);
-				expect(jobs[0].salaryMax).toBe(120000);
+				expect(jobs[0].job.salaryMin).toBe(90000);
+				expect(jobs[0].job.salaryMax).toBe(120000);
 			}
 		});
 
@@ -126,7 +127,7 @@ describe("List Jobs Service", () => {
 
 			expect(jobs).toHaveLength(1);
 			if (jobs[0]) {
-				expect(jobs[0].workplaceLocation).toBe("REMOTE");
+				expect(jobs[0].job.workplaceLocation).toBe("REMOTE");
 			}
 		});
 
@@ -141,7 +142,7 @@ describe("List Jobs Service", () => {
 
 			expect(jobs).toHaveLength(1);
 			if (jobs[0]) {
-				expect(jobs[0].employmentType).toBe("CONTRACTOR");
+				expect(jobs[0].job.employmentType).toBe("CONTRACTOR");
 			}
 		});
 
@@ -160,8 +161,8 @@ describe("List Jobs Service", () => {
 
 			expect(jobs).toHaveLength(1);
 			if (jobs[0]) {
-				expect(jobs[0].country).toBe("Canada");
-				expect(jobs[0].city).toBe("Toronto");
+				expect(jobs[0].job.country).toBe("Canada");
+				expect(jobs[0].job.city).toBe("Toronto");
 			}
 		});
 
@@ -186,7 +187,7 @@ describe("List Jobs Service", () => {
 
 			expect(jobs).toHaveLength(1);
 			if (jobs[0]) {
-				expect(jobs[0].tags.map((t) => t.name)).toContain("react");
+				expect(jobs[0].job.tags.map((t) => t.name)).toContain("react");
 			}
 		});
 	});
@@ -207,8 +208,8 @@ describe("List Jobs Service", () => {
 			expect(totalCount).toBe(22);
 			expect(totalPages).toBe(3);
 			if (jobs[0] && jobs[9]) {
-				expect(jobs[0].title).toBe("Software Engineer 0");
-				expect(jobs[9].title).toBe("Software Engineer 9");
+				expect(jobs[0].job.title).toBe("Software Engineer 0");
+				expect(jobs[9].job.title).toBe("Software Engineer 9");
 			}
 		});
 
@@ -228,8 +229,8 @@ describe("List Jobs Service", () => {
 			expect(totalCount).toBe(12);
 			expect(totalPages).toBe(2);
 			if (jobs[0] && jobs[1]) {
-				expect(jobs[0].title).toBe("Software Engineer 10");
-				expect(jobs[1].title).toBe("Software Engineer 11");
+				expect(jobs[0].job.title).toBe("Software Engineer 10");
+				expect(jobs[1].job.title).toBe("Software Engineer 11");
 			}
 		});
 

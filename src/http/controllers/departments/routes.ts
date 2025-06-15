@@ -6,7 +6,10 @@ import {
 	CreateDepartmentResponseSchema,
 	createDepartmentsController,
 } from "./create-departments.js";
-import { getDepartments } from "./get-departments.js";
+import {
+	GetDepartmentsResponseSchema,
+	getDepartments,
+} from "./get-departments.js";
 
 export const departmentRoutes = (app: FastifyInstance) => {
 	app.withTypeProvider<ZodTypeProvider>().route({
@@ -14,6 +17,7 @@ export const departmentRoutes = (app: FastifyInstance) => {
 		url: "/",
 		schema: {
 			tags: ["departments"],
+			response: GetDepartmentsResponseSchema,
 		},
 		handler: getDepartments,
 	});

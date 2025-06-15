@@ -19,4 +19,6 @@ export const JobDtoSchema = z.object({
 			name: z.string(),
 		}),
 	),
+	createdAt: z.date(),
+	updatedAt: z.date(),
 });

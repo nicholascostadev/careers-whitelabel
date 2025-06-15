@@ -1,7 +1,8 @@
 import { db } from "@/lib/infra/database.js";
-import { Job } from "@/models/index.js";
+import { Department, Job } from "@/models/index.js";
 import type {
 	FindManyJobsRequest,
+	JobWithDepartment,
 	JobsRepository,
 	ListJobsResponse,
 } from "../jobs-repository.js";
@@ -63,7 +64,7 @@ export class PrismaJobsRepository implements JobsRepository {
 		});
 	}
 
-	async findById(id: string): Promise<Job | null> {
+	async findById(id: string): Promise<JobWithDepartment | null> {
 		const jobData = await db.job.findUnique({
 			where: {
 				id,
@@ -79,7 +80,7 @@ export class PrismaJobsRepository implements JobsRepository {
 		}
 
 		// Convert Prisma result to domain model
-		return Job.fromData({
+		const job = Job.fromData({
 			id: jobData.id,
 			title: jobData.title,
 			descriptionMarkdown: jobData.descriptionMarkdown,
@@ -99,6 +100,16 @@ export class PrismaJobsRepository implements JobsRepository {
 			createdAt: jobData.createdAt,
 			updatedAt: jobData.updatedAt,
 		});
+
+		const department = Department.fromData({
+			id: jobData.department.id,
+			name: jobData.department.name,
+		});
+
+		return {
+			job,
+			department,
+		};
 	}
 
 	async findMany(
@@ -173,8 +184,8 @@ export class PrismaJobsRepository implements JobsRepository {
 		]);
 
 		// Convert Prisma results to domain models
-		const jobs = jobsData.map((jobData) =>
-			Job.fromData({
+		const jobs = jobsData.map((jobData) => {
+			const job = Job.fromData({
 				id: jobData.id,
 				title: jobData.title,
 				descriptionMarkdown: jobData.descriptionMarkdown,
@@ -193,8 +204,18 @@ export class PrismaJobsRepository implements JobsRepository {
 				})),
 				createdAt: jobData.createdAt,
 				updatedAt: jobData.updatedAt,
-			}),
-		);
+			});
+
+			const department = Department.fromData({
+				id: jobData.department.id,
+				name: jobData.department.name,
+			});
+
+			return {
+				job,
+				department,
+			};
+		});
 
 		return {
 			jobs,

@@ -43,22 +43,21 @@ describe("GetJobInfoService", () => {
 	};
 
 	it("should return job info for a valid job id", async () => {
-		const job = await createDefaultJob();
+		const createdJob = await createDefaultJob();
 
-		const result = await getJobInfoService.execute(job.id);
+		const { job, department } = await getJobInfoService.execute(createdJob.id);
 
-		expect(result.job.id).toBe(job.id);
-		expect(result.job.title).toBe("Software Engineer");
-		expect(result.job.descriptionMarkdown).toBe(
-			"Software Engineer description",
-		);
-		expect(result.job.departmentId).toBe(defaultDepartment.id);
-		expect(result.job.country).toBe("United States");
-		expect(result.job.city).toBe("New York");
-		expect(result.job.workplaceLocation).toBe("ON_SITE");
-		expect(result.job.employmentType).toBe("FULL_TIME");
-		expect(result.job.status).toBe("OPEN");
-		expect(result.job.tags.map((t) => t.name)).toEqual(["typescript", "react"]);
+		expect(job.id).toBe(createdJob.id);
+		expect(job.title).toBe("Software Engineer");
+		expect(job.descriptionMarkdown).toBe("Software Engineer description");
+		expect(department.id).toBe(defaultDepartment.id);
+		expect(department.name).toBe("Engineering");
+		expect(job.country).toBe("United States");
+		expect(job.city).toBe("New York");
+		expect(job.workplaceLocation).toBe("ON_SITE");
+		expect(job.employmentType).toBe("FULL_TIME");
+		expect(job.status).toBe("OPEN");
+		expect(job.tags.map((t) => t.name)).toEqual(["typescript", "react"]);
 	});
 
 	it("should throw JobNotFoundException if job does not exist", async () => {

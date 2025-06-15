@@ -1,10 +1,13 @@
 import type { ListJobsDTO } from "@/lib/dtos/list-jobs.dto.js";
-import type { JobsRepository } from "@/repositories/jobs-repository.js";
+import type {
+	JobsRepository,
+	ListJobsResponse,
+} from "@/repositories/jobs-repository.js";
 
 export class ListJobsService {
 	constructor(private jobsRepository: JobsRepository) {}
 
-	async execute(dto: ListJobsDTO) {
+	async execute(dto: ListJobsDTO): Promise<ListJobsResponse> {
 		const jobs = await this.jobsRepository.findMany(
 			{
 				departmentName: dto.departmentName,

@@ -12,11 +12,13 @@ export class UpdateJobService {
 	) {}
 
 	async execute(dto: UpdateJobDTO): Promise<Job> {
-		const existingJob = await this.jobsRepository.findById(dto.id);
+		const jobWithDepartment = await this.jobsRepository.findById(dto.id);
 
-		if (!existingJob) {
+		if (!jobWithDepartment) {
 			throw new JobNotFoundException();
 		}
+
+		const { job: existingJob } = jobWithDepartment;
 
 		if (dto.departmentId) {
 			const department = await this.departmentsRepository.findById(
